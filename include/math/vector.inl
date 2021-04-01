@@ -140,6 +140,21 @@ namespace srm
     }
 
     template <class T>
+    vec4<T> vec4<T>::cross(const vec4<T>& _a, const vec4<T>& _b) const
+    {
+        return vec4<T>(
+            y * (_a.z * _b.w - _a.w * _b.z) + z * (_a.w * _b.y - _a.y * _b.w) + w * (_a.y * _b.z - _a.z * _b.y),
+            -(z * (_a.w * _b.x - _a.x * _b.w) + w * (_a.x * _b.z - _a.z * _b.x) + x * (_a.z * _b.w - _a.w * _b.z)),
+            w * (_a.x * _b.y - _a.y * _b.x) + x * (_a.y * _b.w - _a.w * _b.y) + y * (_a.w * _b.x - _a.x * _b.w),
+            -(x * (_a.y * _b.z - _a.z * _b.y) + y * (_a.z * _b.x - _a.x * _b.z) + z * (_a.x * _b.y - _a.y * _b.x))
+        );
+        // i, x1, x2, x3
+        // j, y1, y2, y3
+        // k, z1, z2, z3
+        // t, w1, w2, w3
+    }
+
+    template <class T>
     vec4<T> vec4<T>::operator+(const vec4<T>& _a) const
     {
         return vec4<T>(x + _a.x, y + _a.y, z + _a.z, w + _a.w);
@@ -179,6 +194,12 @@ namespace srm
     auto cross(const V& _a, const V& _b)
     {
         return _a.cross(_b);
+    }
+
+    template <class T>
+    vec4<T> cross(const vec4<T>& _a, const vec4<T>& _b, const vec4<T>& _c)
+    {
+        return _a.cross(_b, _c);
     }
 
     template <class T>

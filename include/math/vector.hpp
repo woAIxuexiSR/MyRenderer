@@ -76,6 +76,7 @@ namespace srm
 
         /* binary operations */
         T dot(const vec4<T>& _a) const;
+        vec4<T> cross(const vec4<T>& _a, const vec4<T>& _b) const;
         vec4<T> operator+(const vec4<T>& _a) const;
         vec4<T> operator-(const vec4<T>& _a) const;
         vec4<T> operator*(T _a) const;
@@ -101,6 +102,9 @@ namespace srm
 
     template <class V>
     auto cross(const V& _a, const V& _b);
+
+    template <class T>
+    vec4<T> cross(const vec4<T>& _a, const vec4<T>& _b, const vec4<T>& _c);
 
     template <class T>
     std::ostream& operator<<(std::ostream& os, const vec2<T>& _a);
