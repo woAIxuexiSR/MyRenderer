@@ -6,6 +6,6 @@ using namespace std;
 int main()
 {
     srm::vec2<int> a(3, 4), b(1, 2);
-    cout << a.dot(b) << endl;
+    cout << srm::dot(a, b) << endl;
     return 0;
 }

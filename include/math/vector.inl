@@ -7,4 +7,10 @@ namespace srm
     {
         return x * a.x + y * a.y;
     }
+
+    template<class V>
+    auto dot(const V& _a, const V& _b)
+    {
+        return _a.dot(_b);
+    }
 }
