@@ -2,10 +2,11 @@
 #include "math/vector.hpp"
 
 using namespace std;
+using namespace srm;
 
 int main()
 {
-    srm::vec2<int> a(3, 4), b(1, 2);
-    cout << srm::dot(a, b) << endl;
+    vec2 a(5, 0), b(100, 1);
+    cout << cross(a, b) << endl;
     return 0;
 }
