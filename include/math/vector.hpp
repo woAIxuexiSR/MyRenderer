@@ -9,7 +9,10 @@ namespace srm
 
 #pragma region vec
     
-    // 除了length 返回 double, 其余所有函数均返回class T
+    /* 
+        除了length 返回 double, 其余所有函数均返回class T
+        在使用vec<int>的normalize等时会发生问题
+    */
     
     template <class T>
     class vec2
@@ -84,14 +87,6 @@ namespace srm
     };
 
 #pragma endregion vec
-
-    /* matrix definition */
-
-#pragma region mat
-
-
-
-#pragma endregion mat
 
     /* useful functions */
 

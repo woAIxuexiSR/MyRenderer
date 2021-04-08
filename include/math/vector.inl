@@ -5,6 +5,7 @@ namespace srm
     /* vector definition */
 #pragma region vec
 
+    // vec2
     template <class T>
     double vec2<T>::length() const
     {
@@ -180,7 +181,6 @@ namespace srm
 
 #pragma endregion vec
 
-
     /* useful funcitons */
 #pragma region utils
 
@@ -205,21 +205,21 @@ namespace srm
     template <class T>
     std::ostream& operator<<(std::ostream& os, const vec2<T>& _a)
     {
-        os << "vec2(" << _a.x << ", " << _a.y << ")";
+        os << "vec2(" << _a.x << "  " << _a.y << ")";
         return os;
     }
 
     template <class T>
     std::ostream& operator<<(std::ostream& os, const vec3<T>& _a)
     {
-        os << "vec3(" << _a.x << ", " << _a.y << ", " << _a.z << ")";
+        os << "vec3(" << _a.x << "  " << _a.y << "  " << _a.z << ")";
         return os;
     }
 
     template <class T>
     std::ostream& operator<<(std::ostream& os, const vec4<T>& _a)
     {
-        os << "vec4(" << _a.x << ", " << _a.y << ", " << _a.z << ", " << _a.w << ")";
+        os << "vec4(" << _a.x << "  " << _a.y << "  " << _a.z << "  " << _a.w << ")";
         return os;
     }
 
