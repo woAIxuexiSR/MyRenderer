@@ -81,6 +81,12 @@ namespace srm
     }
 
     template <class T>
+    vec3<T> vec3<T>::gamma_correction(double correction) const
+    {
+        return vec3<T>(pow(x, correction), pow(y, correction), pow(z, correction));
+    }
+
+    template <class T>
     vec3<T> vec3<T>::operator-() const
     {
         return vec3<T>(-x, -y, -z);

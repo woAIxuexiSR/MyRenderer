@@ -52,19 +52,21 @@ void draw_pic()
     double focal_length = 1.0;
     point low_left = origin - horizontal / 2 - vertical / 2 - direction(0, 0, focal_length); 
 
-    sphere ball(point(0, 0, -1), 0.5);
+    geometry_list world;
+    world.add(make_shared<sphere>(point(0, 0, -1), 0.5));
+    world.add(make_shared<sphere>(point(0, -100.5, -1), 100));
 
     for(int i = 0; i < height; ++i)
         for(int j = 0; j < width; ++j)
         {
-            double u = (double) i / (width - 1);
-            double v = (double) j / (height - 1);
+            double u = (double) j / (width - 1);
+            double v = (double) i / (height - 1);
 
             ray r(origin, low_left + horizontal * u + vertical * v);
             color result;
 
             hit_record rec;
-            if(ball.hit(r, rec))
+            if(world.hit(r, rec))
                 result = (rec.normal + color(1.0)) / 2;
             else
             {

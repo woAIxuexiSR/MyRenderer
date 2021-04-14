@@ -3,6 +3,8 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <random>
+#include <time.h>
 
 const double infinity = std::numeric_limits<double>::infinity();
 const double pi = std::acos(-1);
@@ -18,4 +20,27 @@ inline T clamp(T x, T x_min, T x_max)
     if(x < x_min) return x_min;
     if(x > x_max) return x_max;
     return x;
+}
+
+inline double random_double()
+{
+    static std::uniform_real_distribution<double> dis(0.0, 1.0);
+    static std::default_random_engine e(time(NULL));
+
+    return dis(e);
+}
+
+inline double random_double(double min, double max)
+{
+    return (max - min) * random_double() + min;
+}
+
+inline srm::vec3<double> random_v3()
+{
+    return srm::vec3<double>(random_double(), random_double(), random_double());
+}
+
+inline srm::vec3<double> random_v3(double min, double max)
+{
+    return srm::vec3<double>(random_double(min, max), random_double(min, max), random_double(min, max));
 }

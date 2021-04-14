@@ -33,5 +33,18 @@ bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
 
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
-    return true;
+    hit_record tmp_rec;
+    bool is_hit = false;
+    double t_min = t_interval.y;
+
+    for(const auto& object : objects)
+    {
+        if(object->hit(r, tmp_rec, interval(t_interval.x, t_min)))
+        {
+            is_hit = true;
+            t_min = tmp_rec.t;
+            rec = tmp_rec;
+        }
+    }
+    return is_hit;
 }

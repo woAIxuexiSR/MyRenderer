@@ -51,6 +51,7 @@ namespace srm
 
         /* unary operations */
         double length() const;
+        vec3<T> gamma_correction(double correction) const;
         vec3<T> normalize() const;
         vec3<T> operator-() const;
 
