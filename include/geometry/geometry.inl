@@ -2,6 +2,8 @@
 
 bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
+    // | (ori + t * dir) - center | = r ^ 2
+
     direction rdir = r.get_dir(), dis = r.get_ori() - center;
 
     double a = srm::dot(rdir, rdir);
@@ -28,6 +30,25 @@ bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 
 bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
+    // ori + t * dir = A * x + B * y + C * (1 - x - y)
+
+    srm::mat3<double> m(r.get_dir(), vertex[2] - vertex[0], vertex[2] - vertex[1]);
+    srm::vec3<double> rg = vertex[2] - r.get_ori();
+
+    double t = m.determinant();
+    if(fabs(t) < srm::EPS)
+        return false;
+
+    srm::vec3<double> txy = m.inverse() * rg;
+    
+    interval xy_interval(0, 1);
+    if( !t_interval.in_interval(txy.x) || !xy_interval.in_interval(txy.y) || !xy_interval.in_interval(txy.z) || !xy_interval.in_interval(1 - txy.y - txy.z) )
+        return false;
+
+    rec.t = txy.x;
+    rec.p = r.at(rec.t);
+    rec.normal = normal;
+
     return true;
 }
 

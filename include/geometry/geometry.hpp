@@ -31,7 +31,7 @@ public:
 class geometry
 {
 public:
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0, infinity)) const = 0;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const = 0;
 };
 
 class sphere : public geometry
@@ -44,7 +44,7 @@ public:
     sphere() {}
     sphere(const point& _c, double _r) : center(_c), radius(_r) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
 };
 
 class triangle : public geometry
@@ -57,7 +57,7 @@ public:
     triangle() {}
     triangle(const point& _a, const point& _b, const point& _c) : vertex{_a, _b, _c} { normal = srm::cross(_a - _b, _a - _c).normalize(); }
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
 };
 
 class geometry_list : public geometry
@@ -69,7 +69,7 @@ public:
     void clear() { objects.clear(); }
     void add(std::shared_ptr<geometry> _a) { objects.push_back(_a); }
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
 };
 
 #include "geometry.inl"
