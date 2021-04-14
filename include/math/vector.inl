@@ -7,6 +7,13 @@ namespace srm
 
     // vec2
     template <class T>
+    bool vec2<T>::in_interval(T _a) const
+    {
+        if(_a >= x && _a <= y) return true;
+        return false;
+    }
+
+    template <class T>
     double vec2<T>::length() const
     {
         return sqrt(x * x + y * y);

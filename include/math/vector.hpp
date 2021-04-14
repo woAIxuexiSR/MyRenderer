@@ -25,6 +25,7 @@ namespace srm
         vec2(T _x, T _y): x(_x), y(_y) {}
 
         /* unary operations */
+        bool in_interval(T _a) const;
         double length() const;
         vec2<T> normalize() const;
         vec2<T> operator-() const;
@@ -113,5 +114,10 @@ namespace srm
 #pragma endregion utils
 
 }
+
+using interval = srm::vec2<double>;
+using color = srm::vec3<double>;
+using point = srm::vec3<double>;
+using direction = srm::vec3<double>;
 
 #include "vector.inl"
