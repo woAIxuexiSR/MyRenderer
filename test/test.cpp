@@ -44,6 +44,8 @@ void geometry_test()
 
 color ray_color(const ray& r, const geometry_list& world, int depth)
 {
+    if(depth <= 0) return color(0, 0, 0);
+     
     hit_record rec;
     if(world.hit(r, rec))
     {
