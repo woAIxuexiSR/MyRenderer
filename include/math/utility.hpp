@@ -5,6 +5,7 @@
 #include <memory>
 #include <random>
 #include <time.h>
+#include "vector.hpp"
 
 const double infinity = std::numeric_limits<double>::infinity();
 const double pi = std::acos(-1);
@@ -43,4 +44,19 @@ inline srm::vec3<double> random_v3()
 inline srm::vec3<double> random_v3(double min, double max)
 {
     return srm::vec3<double>(random_double(min, max), random_double(min, max), random_double(min, max));
+}
+
+inline srm::vec3<double> random_sphere()
+{
+    srm::vec3<double> p = random_v3();
+    while(dot(p, p) >= 1)
+        p = random_v3();
+    return p;
+}
+
+inline srm::vec3<double> random_hemisphere(srm::vec3<double> up)
+{
+    srm::vec3<double> p = random_sphere();
+    if(dot(p, up) < 0) p = -p;
+    return p;
 }

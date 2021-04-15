@@ -61,6 +61,7 @@ namespace srm
         vec3<T> operator+(const vec3<T>& _a) const;
         vec3<T> operator-(const vec3<T>& _a) const;
         vec3<T> operator*(T _a) const;
+        vec3<T> operator*(const vec3<T>& _a) const;
         vec3<T> operator/(T _a) const;
     };
 

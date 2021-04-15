@@ -123,6 +123,12 @@ namespace srm
     }
 
     template <class T>
+    vec3<T> vec3<T>::operator*(const vec3<T>& _a) const
+    {
+        return vec3<T>(x * _a.x, y * _a.y, z * _a.z);
+    }
+
+    template <class T>
     vec3<T> vec3<T>::operator/(T _a) const
     {
         return vec3<T>(x / _a, y / _a, z / _a);

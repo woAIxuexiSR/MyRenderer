@@ -3,6 +3,7 @@
 #include "math/matrix.hpp"
 #include "framebuffer.hpp"
 #include "geometry/geometry.hpp"
+#include "material/material.hpp"
 
 using namespace std;
 using namespace srm;
@@ -33,12 +34,28 @@ void framebuffer_test()
 
 void geometry_test()
 {
-    sphere ball1(point(10.1, 10.1, 10.1), 10);
+    sphere ball1(point(10.1, 10.1, 10.1), 10, nullptr);
     ray r(point(0, 0, 0), direction(-1, -1, -1));
 
     hit_record rec;
 
     cout << (ball1.hit(r, rec) ? "YES" : "NO") << endl;
+}
+
+color ray_color(const ray& r, const geometry_list& world, int depth)
+{
+    hit_record rec;
+    if(world.hit(r, rec))
+    {
+        color attenuation;
+        ray scattered;
+        if(rec.hit_mat->scatter(r, rec, attenuation, scattered))
+            return attenuation * ray_color(scattered, world, depth - 1);
+        return color(0, 0, 0);
+    }
+    
+    double t = 0.5 * (r.get_dir().y + 1.0);
+    return color(1.0) * (1 - t) + color(0.5, 0.7, 1.0) * t;
 }
 
 void draw_pic()
@@ -53,26 +70,18 @@ void draw_pic()
     point low_left = origin - horizontal / 2 - vertical / 2 - direction(0, 0, focal_length); 
 
     geometry_list world;
-    world.add(make_shared<sphere>(point(0, 0, -1), 0.5));
-    world.add(make_shared<sphere>(point(0, -100.5, -1), 100));
+    shared_ptr<diffuse> diff = make_shared<diffuse>(color(0.8, 0.8, 0.0));
+    world.add(make_shared<sphere>(point(0, 0, -1), 0.5, diff));
+    world.add(make_shared<sphere>(point(0, -100.5, -1), 100, diff));
 
     for(int i = 0; i < height; ++i)
         for(int j = 0; j < width; ++j)
         {
-            double u = (double) j / (width - 1);
-            double v = (double) i / (height - 1);
+            double u = (j + 0.5) / width;
+            double v = (i + 0.5) / height;
 
             ray r(origin, low_left + horizontal * u + vertical * v);
-            color result;
-
-            hit_record rec;
-            if(world.hit(r, rec))
-                result = (rec.normal + color(1.0)) / 2;
-            else
-            {
-                double t = 0.5 * (r.get_dir().y + 1.0);
-                result = color(1.0) * (1 - t) + color(0.5, 0.7, 1.0) * t;
-            }
+            color result = ray_color(r, world, 50);
 
             fb.set_pixel(i, j, result);
         }

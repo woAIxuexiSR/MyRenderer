@@ -62,7 +62,7 @@ public:
 
                 f << r << ' ' << g << ' ' << b << '\n';
             }
-        std::cout << "\nDone.\n";
+        std::cout << "Done.\n";
         
         f.close();
     }
