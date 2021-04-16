@@ -82,7 +82,7 @@ void draw_pic()
     world.add(make_shared<sphere>(point( 0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(make_shared<sphere>(point( 0.0,    0.0, -1.0),   0.5, material_center));
     world.add(make_shared<sphere>(point(-1.0,    0.0, -1.0),   0.5, material_left));
-    world.add(make_shared<sphere>(point( 1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(make_shared<sphere>(point( 1.0,    0.0, -1.0),   0.5, material_right));
 
     BVHnode bvh(world);
 
