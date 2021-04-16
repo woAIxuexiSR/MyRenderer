@@ -2,7 +2,8 @@
 #include <time.h>
 #include "math/vector.hpp"
 #include "math/matrix.hpp"
-#include "framebuffer.hpp"
+#include "camera/framebuffer.hpp"
+#include "camera/camera.hpp"
 #include "geometry/geometry.hpp"
 #include "material/material.hpp"
 #include "geometry/bvhnode.hpp"
@@ -58,26 +59,22 @@ color ray_color(const ray& r, const BVHnode& world, int depth)
         return color(0, 0, 0);
     }
     
-    double t = 0.5 * (r.get_dir().y + 1.0);
-    return color(1.0) * (1 - t) + color(0.5, 0.7, 1.0) * t;
+    return color(0.5, 0.7, 1.0);
 }
 
 void draw_pic()
 {
-    const int height = 1024, width = 1024;
+    const int height = 720, width = 720 * 1.25;
     const int max_depth = 50;
     const int samples_per_pixel = 20;
     FrameBuffer fb(width, height);
 
-    point origin(0, 0, 1);
-    direction horizontal(2.0, 0, 0);
-    direction vertical(0, 2.0, 0);
-    double focal_length = 2.0;
-    point low_left = origin - horizontal / 2 - vertical / 2 - direction(0, 0, focal_length); 
+    //Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 20);
+    Camera mycamera;
 
     geometry_list world;
 
-    auto material_ground = make_shared<diffuse>(color(0.0, 0.8, 0.8));
+    auto material_ground = make_shared<diffuse>(color(0.8, 0.8, 0.0));
     auto material_center = make_shared<diffuse>(color(0.7, 0.3, 0.3));
     auto material_left   = make_shared<glossy>(color(0.8, 0.8, 0.8), 0.5);
     auto material_right  = make_shared<specular>(color(0.8, 0.6, 0.2));
@@ -95,10 +92,10 @@ void draw_pic()
             color result(0, 0, 0);
             for(int k = 0; k < samples_per_pixel; ++k)
             {
-                double u = (j + random_double()) / (width - 1);
-                double v = (i + random_double()) / (height - 1);
+                double u = (i + random_double()) / height;
+                double v = (j + random_double()) / width;
 
-                ray r(origin, low_left + horizontal * u + vertical * v);
+                ray r = mycamera.get_ray(v, u);
                 result = result + ray_color(r, bvh, max_depth);
             }
             result = result / samples_per_pixel;

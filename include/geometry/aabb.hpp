@@ -30,7 +30,7 @@ public:
         maximum = point(fmax(_a.maximum.x, _b.maximum.x), fmax(_a.maximum.y, _b.maximum.y), fmax(_a.maximum.z, _b.maximum.z));
     }
 
-    bool hit(const ray& r, interval t_interval) const
+    inline bool hit(const ray& r, interval t_interval) const
     {
         double t_min = t_interval.x, t_max = t_interval.y;
         point rori = r.get_ori(), rdir = r.get_dir();

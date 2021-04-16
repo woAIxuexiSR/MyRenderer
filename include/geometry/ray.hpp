@@ -12,7 +12,7 @@ public:
     ray() {}
     ray(const point& _o, const direction _d) : ori(_o), dir(_d.normalize()) {}
 
-    point get_ori() const { return ori; }
-    direction get_dir() const { return dir; }
-    point at(double t) const { return ori + dir * t; }
+    inline point get_ori() const { return ori; }
+    inline direction get_dir() const { return dir; }
+    inline point at(double t) const { return ori + dir * t; }
 };

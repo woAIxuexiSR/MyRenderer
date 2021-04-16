@@ -12,11 +12,12 @@ bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 
     double delta = half_b * half_b - a * c;
     if(delta < 0) return false;
+    delta = sqrt(delta);
 
-    double ans = (-half_b - sqrt(delta)) / a;
+    double ans = (-half_b - delta) / a;
     if(!t_interval.in_interval(ans))
     {
-        ans = (-half_b + sqrt(delta)) / a;
+        ans = (-half_b + delta) / a;
         if(!t_interval.in_interval(ans))
             return false;
     }

@@ -15,7 +15,7 @@ private:
 
 public:
     diffuse() {}
-    diffuse(color _a) : albedo(_a) {}
+    diffuse(const color& _a) : albedo(_a) {}
 
     virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const override;
 };
@@ -27,7 +27,7 @@ private:
 
 public:
     specular() {}
-    specular(color _a) : albedo(_a) {}
+    specular(const color& _a) : albedo(_a) {}
 
     virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const override;
 };
@@ -41,7 +41,7 @@ private:
 
 public:
     glossy() {}
-    glossy(color _a, double _r) : albedo(_a), radius(_r) {}
+    glossy(const color& _a, double _r) : albedo(_a), radius(_r) {}
 
     virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const override;
 };
