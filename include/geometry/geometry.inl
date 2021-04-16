@@ -29,6 +29,11 @@ bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
     return true;
 }
 
+AABB sphere::bounding_box() const
+{
+    return AABB(center - point(radius), center + point(radius));
+}
+
 bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     // ori + t * dir = A * x + B * y + C * (1 - x - y)
@@ -54,6 +59,18 @@ bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
     return true;
 }
 
+AABB triangle::bounding_box() const
+{
+    point m = (fmin(fmin(vertex[0].x, vertex[1].x), vertex[2].x),
+                fmin(fmin(vertex[0].y, vertex[1].y), vertex[2].y),
+                fmin(fmin(vertex[0].z, vertex[1].z), vertex[2].z));
+    point M = (fmax(fmax(vertex[0].x, vertex[1].x), vertex[2].x),
+                fmax(fmax(vertex[0].y, vertex[1].y), vertex[2].y),
+                fmax(fmax(vertex[0].z, vertex[1].z), vertex[2].z));
+
+    return AABB(m, M);
+}
+
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     hit_record tmp_rec;
@@ -70,4 +87,19 @@ bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) cons
         }
     }
     return is_hit;
+}
+
+AABB geometry_list::bounding_box() const
+{
+    bool first = true;
+    AABB ans;
+
+    for(const auto& object : objects)
+    {
+        AABB tmp = object->bounding_box();
+        ans = first ? tmp : AABB(ans, tmp);
+        first = true;
+    }
+    
+    return ans;
 }

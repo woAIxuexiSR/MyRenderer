@@ -23,6 +23,14 @@ inline T clamp(T x, T x_min, T x_max)
     return x;
 }
 
+inline int random_int(int min, int max)
+{
+    static std::uniform_int_distribution<int> dis(min, max);
+    static std::default_random_engine e(time(NULL));
+
+    return dis(e);
+}
+
 inline double random_double()
 {
     static std::uniform_real_distribution<double> dis(0.0, 1.0);
