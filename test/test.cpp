@@ -45,7 +45,7 @@ void geometry_test()
     cout << (ball1.hit(r, rec) ? "YES" : "NO") << endl;
 }
 
-inline color ray_color(const ray& r, const geometry_list& world, int depth)
+inline color ray_color(const ray& r, const BVHnode& world, int depth)
 {
     if(depth <= 0) return color(0, 0, 0);
      
@@ -67,7 +67,7 @@ void draw_pic()
 {
     const int height = 720, width = 720 * 1.25;
     const int max_depth = 100;
-    const int samples_per_pixel = 20;
+    const int samples_per_pixel = 200;
     FrameBuffer fb(width, height);
 
     Camera mycamera(point(13, 2, 3), point(0, 0, 0), direction(0, 1, 0), 20);
@@ -89,14 +89,14 @@ void draw_pic()
             {
                 shared_ptr<material> sphere_material;
 
-                if (choose_mat < 0.8) 
+                if (choose_mat < 0.6) 
                 {
                     // diffuse
                     color albedo = random_v3();
                     sphere_material = make_shared<diffuse>(albedo);
                     world.add(make_shared<sphere>(center, 0.2, sphere_material));
                 } 
-                else if (choose_mat < 0.95)
+                else if (choose_mat < 0.8)
                 {
                     // metal
                     color albedo = random_v3(0.5, 1);
@@ -122,7 +122,7 @@ void draw_pic()
     auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point(4, 1, 0), 1.0, material3));
 
-    //BVHnode bvh(world);
+    BVHnode bvh(world);
 
     for(int i = 0; i < height; ++i)
         for(int j = 0; j < width; ++j)
@@ -134,7 +134,7 @@ void draw_pic()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                result = result + ray_color(r, world, max_depth);
+                result = result + ray_color(r, bvh, max_depth);
             }
             result = result / samples_per_pixel;
 
