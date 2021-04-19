@@ -66,27 +66,61 @@ inline color ray_color(const ray& r, const geometry_list& world, int depth)
 void draw_pic()
 {
     const int height = 720, width = 720 * 1.25;
-    const int max_depth = 500;
+    const int max_depth = 100;
     const int samples_per_pixel = 20;
     FrameBuffer fb(width, height);
 
-    Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 20);
+    Camera mycamera(point(13, 2, 3), point(0, 0, 0), direction(0, 1, 0), 20);
     //Camera mycamera;
 
     geometry_list world;
 
-    auto material_ground = make_shared<diffuse>(color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<diffuse>(color(0.7, 0.3, 0.3));
-    //auto material_left   = make_shared<glossy>(color(0.8, 0.8, 0.8), 0.5);
-    auto material_left   = make_shared<dielectric>(1.5);
-    auto material_left_inner   = make_shared<dielectric>(1.0 / 1.5);
-    auto material_right  = make_shared<specular>(color(0.8, 0.6, 0.2));
+    auto material_ground = make_shared<diffuse>(color(0.5, 0.5, 0.5));
+    world.add(make_shared<sphere>(point(0.0, -1000.0, -1.0), 1000, material_ground));
 
-    world.add(make_shared<sphere>(point( 0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<sphere>(point( 0.0,    0.0, -1.0),   0.5, material_center));
-    world.add(make_shared<sphere>(point(-1.0,    0.0, -1.0),   0.5, material_left));
-    world.add(make_shared<sphere>(point(-1.0,    0.0, -1.0),   0.45, material_left_inner));
-    world.add(make_shared<sphere>(point( 1.0,    0.0, -1.0),   0.5, material_right));
+    for (int a = -11; a < 11; a++) 
+    {
+        for (int b = -11; b < 11; b++) 
+        {
+            double choose_mat = random_double();
+            point center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+
+            if ((center - point(4, 0.2, 0)).length() > 0.9) 
+            {
+                shared_ptr<material> sphere_material;
+
+                if (choose_mat < 0.8) 
+                {
+                    // diffuse
+                    color albedo = random_v3();
+                    sphere_material = make_shared<diffuse>(albedo);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                } 
+                else if (choose_mat < 0.95)
+                {
+                    // metal
+                    color albedo = random_v3(0.5, 1);
+                    double fuzz = random_double(0, 0.5);
+                    sphere_material = make_shared<glossy>(albedo, fuzz);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                } 
+                else 
+                {
+                    // glass
+                    sphere_material = make_shared<dielectric>(1.5);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point(0, 1, 0), 1.0, material1));
+
+    auto material2 = make_shared<diffuse>(color(0.4, 0.2, 0.1));
+    world.add(make_shared<sphere>(point(-4, 1, 0), 1.0, material2));
+
+    auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point(4, 1, 0), 1.0, material3));
 
     //BVHnode bvh(world);
 
