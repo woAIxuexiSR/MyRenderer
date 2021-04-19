@@ -99,7 +99,7 @@ AABB geometry_list::bounding_box() const
     {
         AABB tmp = object->bounding_box();
         ans = first ? tmp : AABB(ans, tmp);
-        first = true;
+        first = false;
     }
     
     return ans;

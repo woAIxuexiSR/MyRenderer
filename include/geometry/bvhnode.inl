@@ -42,7 +42,7 @@ BVHnode::BVHnode(std::vector<std::shared_ptr<geometry> >& src_objects, int start
     {
         left = right = src_objects[start];
     }
-    if(end - start == 2)
+    else if(end - start == 2)
     {
         left = src_objects[start];
         right = src_objects[start + 1];

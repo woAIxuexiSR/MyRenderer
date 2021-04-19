@@ -3,7 +3,7 @@
 #include "math/vector.hpp"
 #include "ray.hpp"
 
-bool check(double& t_min, double& t_max, double t0, double t1)
+inline bool check_cross(double& t_min, double& t_max, double t0, double t1)
 {
     if(t0 > t1)
         std::swap(t0, t1);
@@ -35,11 +35,11 @@ public:
         double t_min = t_interval.x, t_max = t_interval.y;
         point rori = r.get_ori(), rdir = r.get_dir();
 
-        if(!check(t_min, t_max, (minimum.x - rori.x) / rdir.x, (maximum.x - rori.x) / rdir.x))
+        if(!check_cross(t_min, t_max, (minimum.x - rori.x) / rdir.x, (maximum.x - rori.x) / rdir.x))
             return false;
-        if(!check(t_min, t_max, (minimum.y - rori.y) / rdir.y, (maximum.y - rori.y) / rdir.y))
+        if(!check_cross(t_min, t_max, (minimum.y - rori.y) / rdir.y, (maximum.y - rori.y) / rdir.y))
             return false;
-        if(!check(t_min, t_max, (minimum.z - rori.z) / rdir.z, (maximum.z - rori.z) / rdir.z))
+        if(!check_cross(t_min, t_max, (minimum.z - rori.z) / rdir.z, (maximum.z - rori.z) / rdir.z))
             return false;
 
         return true;
