@@ -24,7 +24,7 @@ bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 
     rec.t = ans;
     rec.p = r.at(ans);
-    rec.normal = (rec.p - center).normalize();
+    rec.set_normal(rdir, (rec.p - center).normalize());
     rec.hit_mat = mat;
 
     return true;
@@ -54,7 +54,7 @@ bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
 
     rec.t = txy.x;
     rec.p = r.at(rec.t);
-    rec.normal = normal;
+    rec.set_normal(r.get_dir(), normal);
     rec.hit_mat = mat;
 
     return true;

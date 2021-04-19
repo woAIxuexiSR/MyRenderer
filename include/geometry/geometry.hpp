@@ -17,6 +17,14 @@ public:
     direction normal;
     double t;
     std::shared_ptr<material> hit_mat;
+    bool front_face;
+    double u, v;
+
+    void set_normal(const direction& rdir, const direction& norm)
+    {
+        front_face = dot(rdir, norm) < 0;
+        normal = front_face ? norm : -norm;
+    }
 };
 
 class geometry

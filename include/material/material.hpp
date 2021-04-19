@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geometry/geometry.hpp"
+#include "texture.hpp"
 
 class material
 {
@@ -46,16 +47,19 @@ public:
     virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const override;
 };
 
-class refract : public material
+class dielectric : public material
 {
 private:
-    double index;
+    double index;   // outside / inside
 
 public:
-    refract() {}
-    refract(double _i): index(_i) {}
+    dielectric() {}
+    dielectric(double _i): index(_i) {}
 
     virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const override;
+
+private:
+    static double reflectance(double cosine, double _i);      // Schlic Approximation
 };
 
 #include "material.inl"

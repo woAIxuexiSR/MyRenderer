@@ -45,7 +45,7 @@ void geometry_test()
     cout << (ball1.hit(r, rec) ? "YES" : "NO") << endl;
 }
 
-color ray_color(const ray& r, const BVHnode& world, int depth)
+inline color ray_color(const ray& r, const geometry_list& world, int depth)
 {
     if(depth <= 0) return color(0, 0, 0);
      
@@ -59,32 +59,36 @@ color ray_color(const ray& r, const BVHnode& world, int depth)
         return color(0, 0, 0);
     }
     
-    return color(0.5, 0.7, 1.0);
+    double t = 0.5 * (r.get_dir().normalize().y + 1.0);
+    return color(1, 1, 1) * t + color(0.5, 0.7, 1.0) * (1 - t);
 }
 
 void draw_pic()
 {
     const int height = 720, width = 720 * 1.25;
-    const int max_depth = 50;
+    const int max_depth = 500;
     const int samples_per_pixel = 20;
     FrameBuffer fb(width, height);
 
-    //Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 20);
-    Camera mycamera;
+    Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 20);
+    //Camera mycamera;
 
     geometry_list world;
 
     auto material_ground = make_shared<diffuse>(color(0.8, 0.8, 0.0));
     auto material_center = make_shared<diffuse>(color(0.7, 0.3, 0.3));
-    auto material_left   = make_shared<glossy>(color(0.8, 0.8, 0.8), 0.5);
+    //auto material_left   = make_shared<glossy>(color(0.8, 0.8, 0.8), 0.5);
+    auto material_left   = make_shared<dielectric>(1.5);
+    auto material_left_inner   = make_shared<dielectric>(1.0 / 1.5);
     auto material_right  = make_shared<specular>(color(0.8, 0.6, 0.2));
 
     world.add(make_shared<sphere>(point( 0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(make_shared<sphere>(point( 0.0,    0.0, -1.0),   0.5, material_center));
     world.add(make_shared<sphere>(point(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(make_shared<sphere>(point(-1.0,    0.0, -1.0),   0.45, material_left_inner));
     world.add(make_shared<sphere>(point( 1.0,    0.0, -1.0),   0.5, material_right));
 
-    BVHnode bvh(world);
+    //BVHnode bvh(world);
 
     for(int i = 0; i < height; ++i)
         for(int j = 0; j < width; ++j)
@@ -96,7 +100,7 @@ void draw_pic()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                result = result + ray_color(r, bvh, max_depth);
+                result = result + ray_color(r, world, max_depth);
             }
             result = result / samples_per_pixel;
 
