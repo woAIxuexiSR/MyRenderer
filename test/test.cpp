@@ -151,7 +151,9 @@ void rt2()
     const int sample_per_pixel = 20;
     
     FrameBuffer fb(width, height);
-    Camera mycamera;
+
+    Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 90);
+    //Camera mycamera;
 
     geometry_list world;
 
@@ -165,11 +167,12 @@ void rt2()
     // world.add(make_shared<sphere>(point(1, 0, -1), 0.45, material1_inner));
 
     //auto material2 = make_shared<diffuse>(color(0.4, 0.2, 0.1));
-    auto texture = make_shared<checker>(color(1, 1, 1), color(1, 0, 0), 10);
+    //auto texture = make_shared<checker>(color(1, 1, 1), color(1, 0, 0), 1);
+    auto texture = make_shared<imageTex>("../images/test1.jpg");
     auto material2 = make_shared<diffuse>(texture);
     world.add(make_shared<sphere>(point(0, 0, -1), 0.5, material2));
 
-    auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.0);
+    auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.3);
     world.add(make_shared<sphere>(point(-1, 0, -1), 0.5, material3));
 
     BVHnode bvh(world);

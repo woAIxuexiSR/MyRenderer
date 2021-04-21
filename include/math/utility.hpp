@@ -16,7 +16,7 @@ inline double degree_to_radius(double degree)
 }
 
 template <class T>
-inline T clamp(T x, T x_min, T x_max)
+inline T myclamp(T x, T x_min, T x_max)
 {
     if(x < x_min) return x_min;
     if(x > x_max) return x_max;
