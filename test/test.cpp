@@ -63,7 +63,7 @@ inline color ray_color(const ray& r, const BVHnode& world, int depth)
     return color(1, 1, 1) * t + color(0.5, 0.7, 1.0) * (1 - t);
 }
 
-void draw_pic()
+void rt1()
 {
     const int height = 720, width = 720 * 1.25;
     const int max_depth = 100;
@@ -144,6 +144,55 @@ void draw_pic()
     fb.output("../images/test.ppm");
 }
 
+void rt2()
+{
+    const int width = 720 * 1.25, height = 720;
+    const int max_depth = 50;
+    const int sample_per_pixel = 20;
+    
+    FrameBuffer fb(width, height);
+    Camera mycamera;
+
+    geometry_list world;
+
+    auto material_ground = make_shared<diffuse>(color(0.5, 0.5, 0.5));
+    world.add(make_shared<sphere>(point(0.0, -100.5, -1.0), 100, material_ground));
+
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point(1, 0, -1), 0.5, material1));
+
+    // auto material1_inner = make_shared<dielectric>(1.0 / 1.5);
+    // world.add(make_shared<sphere>(point(1, 0, -1), 0.45, material1_inner));
+
+    //auto material2 = make_shared<diffuse>(color(0.4, 0.2, 0.1));
+    auto texture = make_shared<checker>(color(1, 1, 1), color(1, 0, 0), 10);
+    auto material2 = make_shared<diffuse>(texture);
+    world.add(make_shared<sphere>(point(0, 0, -1), 0.5, material2));
+
+    auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point(-1, 0, -1), 0.5, material3));
+
+    BVHnode bvh(world);
+
+    for(int i = 0; i < height; ++i)
+        for(int j = 0; j < width; ++j)
+        {
+            color result(0, 0, 0);
+            for(int k = 0; k < sample_per_pixel; ++k)
+            {
+                double u = (i + random_double()) / height;
+                double v = (j + random_double()) / width;
+
+                ray r = mycamera.get_ray(v, u);
+                result = result + ray_color(r, bvh, max_depth);
+            }
+            
+            fb.set_pixel(i, j, result / sample_per_pixel);
+        }
+
+    fb.output("../images/test.ppm");
+}
+
 double pdf(double x)
 {
     return 0.5 * x;
@@ -157,7 +206,8 @@ int main()
     //math_test();
     //framebuffer_test();
     //geometry_test();
-    draw_pic();
+    //rt1();
+    rt2();
 
     // const int N = 10000000;
     // double sum = 0;

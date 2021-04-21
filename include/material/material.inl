@@ -7,7 +7,7 @@ bool diffuse::scatter(const ray& r, const hit_record& rec, color& attenuation, r
         out = random_hemisphere(rec.normal);
 
     scattered = ray(rec.p, out);
-    attenuation = albedo;
+    attenuation = albedo->get_color(rec.uv);
     return true;
 }
 
@@ -17,7 +17,7 @@ bool specular::scatter(const ray& r, const hit_record& rec, color& attenuation, 
     direction out = rdir - rec.normal * (srm::dot(rdir, rec.normal) * 2);
 
     scattered = ray(rec.p, out);
-    attenuation = albedo;
+    attenuation = albedo->get_color(rec.uv);
     return srm::dot(out, rec.normal) > 0;
 }
 
@@ -31,7 +31,7 @@ bool glossy::scatter(const ray& r, const hit_record& rec, color& attenuation, ra
         return false;
     
     scattered = ray(rec.p, out);
-    attenuation = albedo;
+    attenuation = albedo->get_color(rec.uv);
     return true;
 }
 

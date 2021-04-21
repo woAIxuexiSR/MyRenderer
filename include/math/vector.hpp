@@ -121,5 +121,6 @@ using interval = srm::vec2<double>;
 using color = srm::vec3<double>;
 using point = srm::vec3<double>;
 using direction = srm::vec3<double>;
+using coord = srm::vec2<double>;
 
 #include "vector.inl"

@@ -24,8 +24,10 @@ bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 
     rec.t = ans;
     rec.p = r.at(ans);
-    rec.set_normal(rdir, (rec.p - center).normalize());
     rec.hit_mat = mat;
+    direction normal = (rec.p - center).normalize();
+    rec.set_normal(rdir, normal);
+    rec.uv = get_sphere_uv(normal);
 
     return true;
 }
@@ -33,6 +35,14 @@ bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 AABB sphere::bounding_box() const
 {
     return AABB(center - point(radius), center + point(radius));
+}
+
+coord sphere::get_sphere_uv(const point& p)
+{
+    double theta = acos(-p.y);
+    double phi = atan2(-p.z, p.x) + pi;
+
+    return coord(phi / (2 * pi), theta / pi);
 }
 
 bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
@@ -49,13 +59,14 @@ bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
     srm::vec3<double> txy = m.inverse() * rg;
     
     interval xy_interval(0, 1);
-    if( !t_interval.in_interval(txy.x) || !xy_interval.in_interval(txy.y) || !xy_interval.in_interval(txy.z) || !xy_interval.in_interval(1 - txy.y - txy.z) )
+    if(!xy_interval.in_interval(txy.y) || !xy_interval.in_interval(txy.z) || !xy_interval.in_interval(1 - txy.y - txy.z) )
         return false;
 
     rec.t = txy.x;
     rec.p = r.at(rec.t);
-    rec.set_normal(r.get_dir(), normal);
     rec.hit_mat = mat;
+    rec.set_normal(r.get_dir(), normal);
+    rec.uv = textureCoord[0] * txy.y + textureCoord[1] * txy.z + textureCoord[2] * (1 - txy.y - txy.z);
 
     return true;
 }

@@ -1,15 +1,15 @@
 #include "texture.hpp"
 
-color solid_color::get_color(double u, double v) const
+color solid_color::get_color(coord uv) const
 {
     return c;
 }
 
-color checker::get_color(double u, double v) const
+color checker::get_color(coord uv) const
 {
-    double weight = pi / frequency;
-    double sines = sin(u * weight) * sin(v * weight);
+    double weight = 2 * pi * cycle;
+    double sines = sin(uv.x * weight) * sin(uv.y * weight);
     
-    if(sines < 0) return odd->get_color(u, v);
-    return even->get_color(u, v);
+    if(sines < 0) return odd->get_color(uv);
+    return even->get_color(uv);
 }

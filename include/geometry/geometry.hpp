@@ -18,7 +18,7 @@ public:
     double t;
     std::shared_ptr<material> hit_mat;
     bool front_face;
-    double u, v;
+    coord uv;
 
     void set_normal(const direction& rdir, const direction& norm)
     {
@@ -47,6 +47,9 @@ public:
 
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;
+
+private:
+    static coord get_sphere_uv(const point& p);
 };
 
 class triangle : public geometry
@@ -55,10 +58,13 @@ private:
     point vertex[3];
     direction normal;
     std::shared_ptr<material> mat;
+    coord textureCoord[3];
 
 public:
     triangle() {}
-    triangle(const point& _a, const point& _b, const point& _c, std::shared_ptr<material> _m) : vertex{_a, _b, _c} { normal = srm::cross(_a - _b, _a - _c).normalize(); }
+    triangle(const point& _a, const point& _b, const point& _c, std::shared_ptr<material> _m,
+            const coord& _tc1 = coord(0, 0), const coord& _tc2 = coord(0, 0), const coord& _tc3 = coord(0, 0))
+            : vertex{_a, _b, _c}, textureCoord{_tc1, _tc2, _tc3} { normal = srm::cross(_a - _b, _a - _c).normalize(); }
 
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;
