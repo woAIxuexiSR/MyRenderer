@@ -80,6 +80,10 @@ AABB triangle::bounding_box() const
                 fmax(fmax(vertex[0].y, vertex[1].y), vertex[2].y),
                 fmax(fmax(vertex[0].z, vertex[1].z), vertex[2].z));
 
+    if(fabs(M.x - m.x) < srm::EPS) M.x += 0.01;
+    if(fabs(M.y - m.y) < srm::EPS) M.y += 0.01;
+    if(fabs(M.z - m.z) < srm::EPS) M.z += 0.01;
+
     return AABB(m, M);
 }
 

@@ -26,17 +26,17 @@ inline T myclamp(T x, T x_min, T x_max)
 inline int random_int(int min, int max)
 {
     static std::uniform_int_distribution<int> dis(min, max);
-    static std::default_random_engine e(time(NULL));
+    static std::mt19937 generator(time(NULL));
 
-    return dis(e);
+    return dis(generator);
 }
 
 inline double random_double()
 {
     static std::uniform_real_distribution<double> dis(0.0, 1.0);
-    static std::default_random_engine e(time(NULL));
+    static std::mt19937 generator(time(NULL));
 
-    return dis(e);
+    return dis(generator);
 }
 
 inline double random_double(double min, double max)
@@ -56,15 +56,28 @@ inline srm::vec3<double> random_v3(double min, double max)
 
 inline srm::vec3<double> random_sphere()
 {
-    srm::vec3<double> p = random_v3();
-    while(dot(p, p) >= 1)
-        p = random_v3();
+    srm::vec3<double> p = random_v3(-1.0, 1.0);
+    while(srm::dot(p, p) > 1)
+        p = random_v3(-1.0, 1.0);
     return p;
 }
 
-inline srm::vec3<double> random_hemisphere(srm::vec3<double> up)
+inline srm::vec3<double> random_hemisphere(const srm::vec3<double>& up)
 {
     srm::vec3<double> p = random_sphere();
-    if(dot(p, up) < 0) p = -p;
+    if(srm::dot(p, up) < 0) p = -p;
+    return p;
+}
+
+inline srm::vec3<double> random_sphere_surface()
+{
+    auto p = random_sphere();
+    return p.normalize();
+}
+
+inline srm::vec3<double> random_hemisphere_surface(const srm::vec3<double>& up)
+{
+    auto p = random_sphere_surface();
+    if(srm::dot(p, up) < 0) p = -p;
     return p;
 }

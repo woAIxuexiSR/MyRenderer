@@ -10,7 +10,7 @@ private:
 
 public:
     ray() {}
-    ray(const point& _o, const direction _d) : ori(_o), dir(_d.normalize()) {}
+    ray(const point& _o, const direction& _d) : ori(_o), dir(_d.normalize()) {}
 
     inline point get_ori() const { return ori; }
     inline direction get_dir() const { return dir; }

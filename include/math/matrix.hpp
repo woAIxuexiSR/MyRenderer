@@ -6,7 +6,7 @@
 
 namespace srm
 {
-    const double EPS = 1e-10;
+    const double EPS = 1e-6;
 
     /* matrix definition */
 

@@ -6,6 +6,7 @@
 class material
 {
 public:
+    virtual color emitted(coord uv) const { return color(0, 0, 0); }
     virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const = 0;
 };
 
@@ -63,6 +64,20 @@ public:
 
 private:
     static double reflectance(double cosine, double _i);      // Schlic Approximation
+};
+
+class diffuse_light : public material
+{
+private:
+    std::shared_ptr<texture> emit;
+
+public:
+    diffuse_light() {}
+    diffuse_light(std::shared_ptr<texture> _e) : emit(_e) {}
+    diffuse_light(const color& _e) : emit(std::make_shared<solid_color>(_e)) {}
+
+    virtual color emitted(coord uv) const override { return emit->get_color(uv); }
+    virtual bool scatter(const ray& r, const hit_record& rec, color& attenuation, ray& scattered) const override { return false; }
 };
 
 #include "material.inl"

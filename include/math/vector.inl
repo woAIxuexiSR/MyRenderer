@@ -75,6 +75,18 @@ namespace srm
     }
 
     template <class T>
+    T vec3<T>::maxv() const
+    {
+        return x > y ? (x > z ? x : z) : (y > z ? y : z);
+    }
+
+    template <class T>
+    T vec3<T>::minv() const
+    {
+        return x < y ? (x < z ? x : z) : (y < z ? y : z);
+    }
+
+    template <class T>
     vec3<T> vec3<T>::normalize() const
     {
         return (*this) / length();

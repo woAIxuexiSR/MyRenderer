@@ -47,20 +47,23 @@ void geometry_test()
 
 inline color ray_color(const ray& r, const BVHnode& world, int depth)
 {
-    if(depth <= 0) return color(0, 0, 0);
+    static const color background = color(0.0, 0.0, 0.0);
+
+    if(depth <= 0) return color(0.0, 0.0, 0.0);
      
     hit_record rec;
     if(world.hit(r, rec))
     {
         color attenuation;
         ray scattered;
+        color emit = rec.hit_mat->emitted(rec.uv);
+
         if(rec.hit_mat->scatter(r, rec, attenuation, scattered))
-            return attenuation * ray_color(scattered, world, depth - 1);
-        return color(0, 0, 0);
+            return emit + attenuation * ray_color(scattered, world, depth - 1);
+        return emit;
     }
     
-    double t = 0.5 * (r.get_dir().normalize().y + 1.0);
-    return color(1, 1, 1) * t + color(0.5, 0.7, 1.0) * (1 - t);
+    return background;
 }
 
 void rt1()
@@ -152,16 +155,17 @@ void rt2()
     
     FrameBuffer fb(width, height);
 
-    Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 90);
-    //Camera mycamera;
+    //Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 90);
+    Camera mycamera(point(0, 0, 0));
 
     geometry_list world;
 
     auto material_ground = make_shared<diffuse>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point(0.0, -100.5, -1.0), 100, material_ground));
 
-    auto material1 = make_shared<dielectric>(1.5);
-    world.add(make_shared<sphere>(point(1, 0, -1), 0.5, material1));
+    //auto material1 = make_shared<dielectric>(1.5);
+    auto material = make_shared<diffuse>(color(0.8, 0.6, 0.3));
+    world.add(make_shared<sphere>(point(1, 0, -1), 0.5, material));
 
     // auto material1_inner = make_shared<dielectric>(1.0 / 1.5);
     // world.add(make_shared<sphere>(point(1, 0, -1), 0.45, material1_inner));
@@ -173,7 +177,13 @@ void rt2()
     world.add(make_shared<sphere>(point(0, 0, -1), 0.5, material2));
 
     auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.3);
-    world.add(make_shared<sphere>(point(-1, 0, -1), 0.5, material3));
+    world.add(make_shared<sphere>(point(-1, 0, -1), 0.5, material));
+
+    auto light_material = make_shared<diffuse_light>(color(4.0, 4.0, 4.0));
+    world.add(make_shared<sphere>(point(0, 2.2, -1), 1.5, light_material));
+    // // z -2, 0 , y -0.5 0.5, x 3
+    // world.add(make_shared<triangle>(point(3, -0.5, -2), point(3, -0.5, 0), point(3, 0.5, -2), light_material));
+    // world.add(make_shared<triangle>(point(3, 0.5, -2), point(3, 0.5, 0), point(3, -0.5, 0), light_material));
 
     BVHnode bvh(world);
 
@@ -187,7 +197,8 @@ void rt2()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                result = result + ray_color(r, bvh, max_depth);
+                color rc = ray_color(r, bvh, max_depth);
+                result = result + (rc.maxv() > 0.0 ? rc / rc.maxv() : rc);
             }
             
             fb.set_pixel(i, j, result / sample_per_pixel);
@@ -196,9 +207,9 @@ void rt2()
     fb.output("../images/test.ppm");
 }
 
-double pdf(double x)
+double pdf(const point& p)
 {
-    return 0.5 * x;
+    return 1.0 / (4 * pi);
 }
 
 // importance sampling
@@ -216,10 +227,11 @@ int main()
     // double sum = 0;
     // for(int i = 0; i < N; ++i)
     // {
-    //     double x = sqrt(random_double(0, 4));
-    //     sum += x * x * x / pdf(x);
+    //     point p = random_sphere_surface();
+    //     sum += p.z * p.z / pdf(p);
     // }
     // cout << sum / (double)N << endl;
+    // cout << 4.0 / 3.0 * pi << endl;
 
     clock_t end = clock();
     cout << (double)(end - start) / CLOCKS_PER_SEC << endl;

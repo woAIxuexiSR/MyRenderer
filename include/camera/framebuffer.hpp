@@ -57,11 +57,9 @@ public:
 
                 color c = get_pixel(i, j);
                 if(gamma_correction) c = c.gamma_correction(correction);
-                int r = static_cast<int>(c.x * 255.999999);
-                int g = static_cast<int>(c.y * 255.999999);
-                int b = static_cast<int>(c.z * 255.999999);
+                c = c * 255.0;
 
-                f << r << ' ' << g << ' ' << b << '\n';
+                f << (int)c.x << ' ' << (int)c.y << ' ' << (int)c.z << '\n';
             }
         std::cout << "Done.\n";
         

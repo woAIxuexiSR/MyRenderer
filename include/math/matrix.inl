@@ -132,7 +132,7 @@ namespace srm
     mat3<T> mat3<T>::inverse() const
     {
         T det = determinant();
-        if(abs((double)det) < EPS)
+        if(fabs((double)det) < EPS)
         {
             std::cout << "mat3 doesn't have an inverse" << std::endl;
             exit(-1);
