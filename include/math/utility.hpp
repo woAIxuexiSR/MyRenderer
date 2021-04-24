@@ -26,17 +26,17 @@ inline T myclamp(T x, T x_min, T x_max)
 inline int random_int(int min, int max)
 {
     static std::uniform_int_distribution<int> dis(min, max);
-    static std::mt19937 generator(time(NULL));
+    static std::default_random_engine e(time(NULL));
 
-    return dis(generator);
+    return dis(e);
 }
 
 inline double random_double()
 {
     static std::uniform_real_distribution<double> dis(0.0, 1.0);
-    static std::mt19937 generator(time(NULL));
+    static std::default_random_engine e(time(NULL));
 
-    return dis(generator);
+    return dis(e);
 }
 
 inline double random_double(double min, double max)

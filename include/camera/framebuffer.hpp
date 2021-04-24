@@ -57,6 +57,9 @@ public:
 
                 color c = get_pixel(i, j);
                 if(gamma_correction) c = c.gamma_correction(correction);
+                
+                double m = c.maxv();
+                c = m > 1.0 ? c / m : c;
                 c = c * 255.0;
 
                 f << (int)c.x << ' ' << (int)c.y << ' ' << (int)c.z << '\n';

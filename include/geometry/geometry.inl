@@ -59,7 +59,7 @@ bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
     srm::vec3<double> txy = m.inverse() * rg;
     
     interval xy_interval(0, 1);
-    if(!xy_interval.in_interval(txy.y) || !xy_interval.in_interval(txy.z) || !xy_interval.in_interval(1 - txy.y - txy.z) )
+    if( !t_interval.in_interval(txy.x) || !xy_interval.in_interval(txy.y) || !xy_interval.in_interval(txy.z) || !xy_interval.in_interval(1 - txy.y - txy.z) )
         return false;
 
     rec.t = txy.x;
@@ -85,6 +85,87 @@ AABB triangle::bounding_box() const
     if(fabs(M.z - m.z) < srm::EPS) M.z += 0.01;
 
     return AABB(m, M);
+}
+
+bool yz_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    point rori = r.get_ori();
+    direction rdir = r.get_dir();
+
+    double t = fabs(rdir.x) < srm::EPS ? -1 : (x - rori.x) / rdir.x;
+    if(!t_interval.in_interval(t))
+        return false;
+    
+    point p = r.at(t);
+    if(p.y < y0 || p.y > y1 || p.z < z0 || p.z > z1)
+        return false;
+
+    rec.t = t;
+    rec.p = p;
+    rec.hit_mat = mat;
+    rec.set_normal(rdir, direction(1, 0, 0));
+    rec.uv = coord((p.z - z0) / (z1 - z0), (p.y - y0) / (y1 - y0));
+    
+    return true;
+}
+
+AABB yz_rect::bounding_box() const
+{
+    return AABB(point(x - 0.001, y0, z0), point(x + 0.001, y1, z1));
+}
+
+bool xy_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    point rori = r.get_ori();
+    direction rdir = r.get_dir();
+
+    double t = fabs(rdir.z) < srm::EPS ? -1 : (z - rori.z) / rdir.z;
+    if(!t_interval.in_interval(t))
+        return false;
+    
+    point p = r.at(t);
+    if(p.x < x0 || p.x > x1 || p.y < y0 || p.y > y1)
+        return false;
+
+    rec.t = t;
+    rec.p = p;
+    rec.hit_mat = mat;
+    rec.set_normal(rdir, direction(0, 0, 1));
+    rec.uv = coord((p.x - x0) / (x1 - x0), (p.y - y0) / (y1 - y0));
+    
+    return true;
+}
+
+AABB xy_rect::bounding_box() const
+{
+    return AABB(point(x0, y0, z - 0.001), point(x1, y1, z + 0.001));
+}
+
+bool xz_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    point rori = r.get_ori();
+    direction rdir = r.get_dir();
+
+    double t = fabs(rdir.y) < srm::EPS ? -1 : (y - rori.y) / rdir.y;
+    if(!t_interval.in_interval(t))
+        return false;
+    
+    point p = r.at(t);
+    if(p.x < x0 || p.x > x1 || p.z < z0 || p.z > z1)
+        return false;
+
+    rec.t = t;
+    rec.p = p;
+    rec.hit_mat = mat;
+    rec.set_normal(rdir, direction(0, 1, 0));
+    rec.uv = coord((p.x - x0) / (x1 - x0), (p.z - z0) / (z1 - z0));
+    
+    return true;
+}
+
+AABB xz_rect::bounding_box() const
+{
+    return AABB(point(x0, y - 0.001, z0), point(x1, y + 0.001, z1));
 }
 
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const

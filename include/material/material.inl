@@ -48,7 +48,7 @@ bool dielectric::scatter(const ray& r, const hit_record& rec, color& attenuation
         scattered = ray(rec.p, rdir + normal * (cosine_theta * 2));
     else        // refract
     {
-        direction out_parallel = rec.normal * (-sqrt(1.0 - sine_theta_prime));
+        direction out_parallel = normal * (-sqrt(1.0 - sine_theta_prime));
         scattered = ray(rec.p, out_perpendicular + out_parallel);
     }
 

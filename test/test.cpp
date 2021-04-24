@@ -20,7 +20,8 @@ void math_test()
     mat4<float> d(vec4<float>(3, 4, 5, 6), vec4<float>(1, 2, 3, 3), vec4<float>(4, 3, 1, 2), vec4<float>(2, 3, 3, 5));
     mat4<float> e(vec4<float>(3, 4, 5, 6), vec4<float>(1, 2, 3, 3), vec4<float>(4, 3, 1, 2), vec4<float>(2, 4, 3, 5));
     vec4<float> f(1.1, 2.2, 3.3, 4.4);
-    cout << d * f << endl;
+
+    cout << a.inverse() << endl;
 }
 
 void framebuffer_test()
@@ -156,34 +157,32 @@ void rt2()
     FrameBuffer fb(width, height);
 
     //Camera mycamera(point(-2, 2, 1), point(0, 0, -1), direction(0, 1, 0), 90);
-    Camera mycamera(point(0, 0, 0));
+    Camera mycamera(point(0, 0, 3));
 
     geometry_list world;
 
     auto material_ground = make_shared<diffuse>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point(0.0, -100.5, -1.0), 100, material_ground));
 
-    //auto material1 = make_shared<dielectric>(1.5);
-    auto material = make_shared<diffuse>(color(0.8, 0.6, 0.3));
-    world.add(make_shared<sphere>(point(1, 0, -1), 0.5, material));
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point(1, 0, -1), 0.5, material1));
 
-    // auto material1_inner = make_shared<dielectric>(1.0 / 1.5);
-    // world.add(make_shared<sphere>(point(1, 0, -1), 0.45, material1_inner));
-
-    //auto material2 = make_shared<diffuse>(color(0.4, 0.2, 0.1));
     //auto texture = make_shared<checker>(color(1, 1, 1), color(1, 0, 0), 1);
     auto texture = make_shared<imageTex>("../images/test1.jpg");
     auto material2 = make_shared<diffuse>(texture);
     world.add(make_shared<sphere>(point(0, 0, -1), 0.5, material2));
 
     auto material3 = make_shared<glossy>(color(0.7, 0.6, 0.5), 0.3);
-    world.add(make_shared<sphere>(point(-1, 0, -1), 0.5, material));
+    world.add(make_shared<sphere>(point(-1, 0, -1), 0.5, material3));
 
     auto light_material = make_shared<diffuse_light>(color(4.0, 4.0, 4.0));
-    world.add(make_shared<sphere>(point(0, 2.2, -1), 1.5, light_material));
-    // // z -2, 0 , y -0.5 0.5, x 3
-    // world.add(make_shared<triangle>(point(3, -0.5, -2), point(3, -0.5, 0), point(3, 0.5, -2), light_material));
-    // world.add(make_shared<triangle>(point(3, 0.5, -2), point(3, 0.5, 0), point(3, -0.5, 0), light_material));
+    //world.add(make_shared<sphere>(point(0, 2.2, -1), 1.5, light_material));
+    
+    world.add(make_shared<yz_rect>(2, -0.5, 2.5, -2, 0, light_material));
+    //world.add(make_shared<triangle>(point(1.0, 2.0, 1.0), point(1.0, 2.0, -1.0), point(-1.0, 2.0, 1.0), light_material));
+    // z -2, 0 , y -0.5 0.5, x 3
+    //world.add(make_shared<triangle>(point(2, -0.5, -2), point(3, -0.5, 0), point(3, 0.5, -2), light_material));
+    //world.add(make_shared<triangle>(point(3, 0.5, -2), point(3, 0.5, 0), point(3, -0.5, 0), light_material));
 
     BVHnode bvh(world);
 
@@ -198,7 +197,7 @@ void rt2()
 
                 ray r = mycamera.get_ray(v, u);
                 color rc = ray_color(r, bvh, max_depth);
-                result = result + (rc.maxv() > 0.0 ? rc / rc.maxv() : rc);
+                result = result + rc;
             }
             
             fb.set_pixel(i, j, result / sample_per_pixel);
