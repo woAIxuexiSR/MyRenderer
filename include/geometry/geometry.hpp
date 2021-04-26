@@ -27,12 +27,16 @@ public:
     }
 };
 
+
+
 class geometry
 {
 public:
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const = 0;
     virtual AABB bounding_box() const = 0;
 };
+
+
 
 class sphere : public geometry
 {
@@ -52,6 +56,8 @@ private:
     static coord get_sphere_uv(const point& p);
 };
 
+
+
 class triangle : public geometry
 {
 private:
@@ -70,6 +76,8 @@ public:
     virtual AABB bounding_box() const override;
 };
 
+
+
 class yz_rect : public geometry
 {
 private:
@@ -85,6 +93,8 @@ public:
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;
 };
+
+
 
 class xy_rect : public geometry
 {
@@ -102,6 +112,8 @@ public:
     virtual AABB bounding_box() const override;
 };
 
+
+
 class xz_rect : public geometry
 {
 private:
@@ -117,6 +129,57 @@ public:
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;
 };
+
+
+
+class box : public geometry
+{
+private:
+    point m, M;
+    geometry_list faces;
+
+public:
+    box() {}
+    box(point _m, point _M, std::shared_ptr<material> mat);
+
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual AABB bounding_box() const override;
+};
+
+
+
+class translate : public geometry
+{
+private:
+    std::shared_ptr<geometry> object;
+    direction offset;
+
+public:
+    translate() {}
+    translate(std::shared_ptr<geometry> _o, const direction& _t) : object(_o), trans(_t) {}
+
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual AABB bounding_box() const override;
+};
+
+
+
+
+class rotate_y : public geometry
+{
+private:
+    std::shared_ptr<geometry> object;
+    double radius;
+
+public:
+    rotate_y() {}
+    rotate_y(std::shared_ptr<geometry> _o, double _degree) : object(_o), radius(degree_to_radius(_degree)) {}
+
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual AABB bounding_box() const override;
+};
+
+
 
 class geometry_list : public geometry
 {

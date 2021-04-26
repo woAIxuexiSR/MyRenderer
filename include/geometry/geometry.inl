@@ -168,6 +168,54 @@ AABB xz_rect::bounding_box() const
     return AABB(point(x0, y - 0.001, z0), point(x1, y + 0.001, z1));
 }
 
+box::box(point _m, point _M, std::shared_ptr<material> mat) : m(_m), M(_M)
+{
+    faces.add(std::make_shared<xy_rect>(_m.z, _m.x, _M.x, _m.y, _M.y, mat));
+    faces.add(std::make_shared<xy_rect>(_M.z, _m.x, _M.x, _m.y, _M.y, mat));
+    
+    faces.add(std::make_shared<xz_rect>(_m.y, _m.x, _M.x, _m.z, _M.z, mat));
+    faces.add(std::make_shared<xz_rect>(_M.y, _m.x, _M.x, _m.z, _M.z, mat));
+
+    faces.add(std::make_shared<yz_rect>(_m.x, _m.y, _M.y, _m.z, _M.z, mat));
+    faces.add(std::make_shared<yz_rect>(_M.x, _m.y, _M.y, _m.z, _M.z, mat));
+}
+
+bool box::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    return faces.hit(r, rec, t_interval);
+}
+
+AABB box::bounding_box() const
+{
+    return AABB(m, M);
+}
+
+bool translate::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    ray moved(r.get_ori() - offset, r.get_dir());
+
+    if(!object->hit(moved, rec, t_interval))
+        return false;
+
+    rec.p = rec.p + offset;
+}
+
+AABB translate::bounding_box() const
+{
+    AABB aabb = object->bounding_box();
+    return AABB(aabb.minimum + offset, aabb.maximum + offset);
+}
+
+bool rotate_y::hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const
+{
+
+}
+
+AABB rotate_y::bounding_box() const
+{
+    
+}
+
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     hit_record tmp_rec;

@@ -48,7 +48,7 @@ void geometry_test()
 
 inline color ray_color(const ray& r, const BVHnode& world, int depth)
 {
-    static const color background = color(0.0, 0.0, 0.0);
+    static const color background = color(0.5, 0.7, 1.0);
 
     if(depth <= 0) return color(0.0, 0.0, 0.0);
      
@@ -219,8 +219,8 @@ int main()
     //math_test();
     //framebuffer_test();
     //geometry_test();
-    //rt1();
-    rt2();
+    rt1();
+    //rt2();
 
     // const int N = 10000000;
     // double sum = 0;
