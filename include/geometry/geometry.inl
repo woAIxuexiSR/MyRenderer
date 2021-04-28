@@ -73,16 +73,16 @@ bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
 
 AABB triangle::bounding_box() const
 {
-    point m = (fmin(fmin(vertex[0].x, vertex[1].x), vertex[2].x),
-                fmin(fmin(vertex[0].y, vertex[1].y), vertex[2].y),
-                fmin(fmin(vertex[0].z, vertex[1].z), vertex[2].z));
-    point M = (fmax(fmax(vertex[0].x, vertex[1].x), vertex[2].x),
-                fmax(fmax(vertex[0].y, vertex[1].y), vertex[2].y),
-                fmax(fmax(vertex[0].z, vertex[1].z), vertex[2].z));
+    point m(fmin(fmin(vertex[0].x, vertex[1].x), vertex[2].x),
+            fmin(fmin(vertex[0].y, vertex[1].y), vertex[2].y),
+            fmin(fmin(vertex[0].z, vertex[1].z), vertex[2].z));
+    point M(fmax(fmax(vertex[0].x, vertex[1].x), vertex[2].x),
+            fmax(fmax(vertex[0].y, vertex[1].y), vertex[2].y),
+            fmax(fmax(vertex[0].z, vertex[1].z), vertex[2].z));
 
-    if(fabs(M.x - m.x) < srm::EPS) M.x += 0.01;
-    if(fabs(M.y - m.y) < srm::EPS) M.y += 0.01;
-    if(fabs(M.z - m.z) < srm::EPS) M.z += 0.01;
+    if(fabs(M.x - m.x) < srm::EPS) M.x += 0.01, m.x -= 0.01;
+    if(fabs(M.y - m.y) < srm::EPS) M.y += 0.01, m.x -= 0.01;
+    if(fabs(M.z - m.z) < srm::EPS) M.z += 0.01, m.x -= 0.01;
 
     return AABB(m, M);
 }
@@ -168,54 +168,6 @@ AABB xz_rect::bounding_box() const
     return AABB(point(x0, y - 0.001, z0), point(x1, y + 0.001, z1));
 }
 
-box::box(point _m, point _M, std::shared_ptr<material> mat) : m(_m), M(_M)
-{
-    faces.add(std::make_shared<xy_rect>(_m.z, _m.x, _M.x, _m.y, _M.y, mat));
-    faces.add(std::make_shared<xy_rect>(_M.z, _m.x, _M.x, _m.y, _M.y, mat));
-    
-    faces.add(std::make_shared<xz_rect>(_m.y, _m.x, _M.x, _m.z, _M.z, mat));
-    faces.add(std::make_shared<xz_rect>(_M.y, _m.x, _M.x, _m.z, _M.z, mat));
-
-    faces.add(std::make_shared<yz_rect>(_m.x, _m.y, _M.y, _m.z, _M.z, mat));
-    faces.add(std::make_shared<yz_rect>(_M.x, _m.y, _M.y, _m.z, _M.z, mat));
-}
-
-bool box::hit(const ray& r, hit_record& rec, interval t_interval) const
-{
-    return faces.hit(r, rec, t_interval);
-}
-
-AABB box::bounding_box() const
-{
-    return AABB(m, M);
-}
-
-bool translate::hit(const ray& r, hit_record& rec, interval t_interval) const
-{
-    ray moved(r.get_ori() - offset, r.get_dir());
-
-    if(!object->hit(moved, rec, t_interval))
-        return false;
-
-    rec.p = rec.p + offset;
-}
-
-AABB translate::bounding_box() const
-{
-    AABB aabb = object->bounding_box();
-    return AABB(aabb.minimum + offset, aabb.maximum + offset);
-}
-
-bool rotate_y::hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const
-{
-
-}
-
-AABB rotate_y::bounding_box() const
-{
-    
-}
-
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     hit_record tmp_rec;
@@ -247,4 +199,107 @@ AABB geometry_list::bounding_box() const
     }
     
     return ans;
+}
+
+box::box(point _m, point _M, std::shared_ptr<material> mat) : m(_m), M(_M)
+{
+    faces.add(std::make_shared<xy_rect>(_m.z, _m.x, _M.x, _m.y, _M.y, mat));
+    faces.add(std::make_shared<xy_rect>(_M.z, _m.x, _M.x, _m.y, _M.y, mat));
+    
+    faces.add(std::make_shared<xz_rect>(_m.y, _m.x, _M.x, _m.z, _M.z, mat));
+    faces.add(std::make_shared<xz_rect>(_M.y, _m.x, _M.x, _m.z, _M.z, mat));
+
+    faces.add(std::make_shared<yz_rect>(_m.x, _m.y, _M.y, _m.z, _M.z, mat));
+    faces.add(std::make_shared<yz_rect>(_M.x, _m.y, _M.y, _m.z, _M.z, mat));
+}
+
+bool box::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    return faces.hit(r, rec, t_interval);
+}
+
+AABB box::bounding_box() const
+{
+    return AABB(m, M);
+}
+
+bool translate::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    ray moved(r.get_ori() - offset, r.get_dir());
+
+    if(!object->hit(moved, rec, t_interval))
+        return false;
+
+    rec.p = rec.p + offset;
+    return true;
+}
+
+AABB translate::bounding_box() const
+{
+    AABB aabb = object->bounding_box();
+    return AABB(aabb.minimum + offset, aabb.maximum + offset);
+}
+
+rotate_y::rotate_y(std::shared_ptr<geometry> _o, double degree) : object(_o)
+{
+    double radius = degree_to_radius(degree);
+    
+    sine = sin(radius);
+    cosine = cos(radius);
+
+    AABB aabb = _o->bounding_box();
+
+    double x0 = aabb.minimum.x, x1 = aabb.maximum.x, tmpx;
+    double z0 = aabb.minimum.z, z1 = aabb.maximum.z, tmpz;
+
+    point m(cosine * x0 + sine * z0, aabb.minimum.y, -sine * x0 + cosine * z0);
+    point M(cosine * x0 + sine * z0, aabb.maximum.y, -sine * x0 + cosine * z0);
+
+    tmpx = cosine * x0 + sine * z1, tmpz = -sine * x0 + cosine * z1;
+    m.x = m.x < tmpx ? m.x : tmpx; m.z = m.z < tmpz ? m.z : tmpz;
+    M.x = M.x > tmpx ? M.x : tmpx; M.z = M.z > tmpz ? M.z : tmpz;
+
+    tmpx = cosine * x1 + sine * z0, tmpz = -sine * x1 + cosine * z0;
+    m.x = m.x < tmpx ? m.x : tmpx; m.z = m.z < tmpz ? m.z : tmpz;
+    M.x = M.x > tmpx ? M.x : tmpx; M.z = M.z > tmpz ? M.z : tmpz;
+
+    tmpx = cosine * x1 + sine * z1, tmpz = -sine * x1 + cosine * z1;
+    m.x = m.x < tmpx ? m.x : tmpx; m.z = m.z < tmpz ? m.z : tmpz;
+    M.x = M.x > tmpx ? M.x : tmpx; M.z = M.z > tmpz ? M.z : tmpz;
+
+    box = AABB(m, M);
+}
+
+bool rotate_y::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    point rori = r.get_ori(); direction rdir = r.get_dir();
+    
+    double tmpx, tmpz;
+
+    // ray rotate reversely
+    tmpx = cosine * rori.x - sine * rori.z; tmpz = sine * rori.x + cosine * rori.z;
+    point newori(tmpx, rori.y, tmpz);
+
+    tmpx = cosine * rdir.x - sine * rdir.z; tmpz = sine * rdir.x + cosine * rdir.z;
+    direction newdir(tmpx, rdir.y, tmpz);
+
+    ray rotated(newori, newdir);
+
+    if(!object->hit(rotated, rec,t_interval))
+        return false;
+
+    point p = rec.p;
+    tmpx = cosine * p.x + sine * p.z; tmpz = -sine * p.x + cosine * p.z;
+    rec.p = point(tmpx, p.y, tmpz);
+
+    direction normal = rec.normal;
+    tmpx = cosine * normal.x + sine * normal.z; tmpz = -sine * normal.x + cosine * normal.z;
+    rec.set_normal(rdir, direction(tmpx, normal.y, tmpz));
+
+    return true;
+}
+
+AABB rotate_y::bounding_box() const
+{
+    return box;
 }

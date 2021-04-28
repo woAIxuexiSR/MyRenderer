@@ -85,6 +85,14 @@ namespace srm
                     d[2] * _a.d[0] + d[3] * _a.d[2], d[2] * _a.d[1] + d[3] * _a.d[3]);
     }
 
+    template <class T>
+    mat2<T> mat2<T>::rotate(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat2<T>(cosine, -sine, sine, cosine) * (*this);
+    }
+
     // mat3
     template <class T>
     mat3<T>::mat3(const vec3<T>& _a, const vec3<T>& _b, const vec3<T>& _c)
@@ -200,6 +208,30 @@ namespace srm
         return mat3<T>(dot(row(0), _a.col(0)), dot(row(0), _a.col(1)), dot(row(0), _a.col(2)),
                     dot(row(1), _a.col(0)), dot(row(1), _a.col(1)), dot(row(1), _a.col(2)),
                     dot(row(2), _a.col(0)), dot(row(2), _a.col(1)), dot(row(2), _a.col(2)));
+    }
+
+    template <class T>
+    mat3<T> mat3<T>::rotate_y(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat3<T>(cosine, 0, sine, 0, 1, 0, -sine, 0, cosine) * (*this);
+    }
+
+    template <class T>
+    mat3<T> mat3<T>::rotate_x(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat3<T>(1, 0, 0, 0, cosine, -sine, 0, sine, cosine) * (*this);
+    }
+
+    template <class T>
+    mat3<T> mat3<T>::rotate_z(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat3<T>(cosine, -sine, 0, sine, cosine, 0, 0, 0, 1) * (*this);
     }
 
     // mat4
@@ -352,6 +384,36 @@ namespace srm
                     dot(row(1), _a.col(0)), dot(row(1), _a.col(1)), dot(row(1), _a.col(2)), dot(row(1), _a.col(3)),
                     dot(row(2), _a.col(0)), dot(row(2), _a.col(1)), dot(row(2), _a.col(2)), dot(row(2), _a.col(3)),
                     dot(row(3), _a.col(0)), dot(row(3), _a.col(1)), dot(row(3), _a.col(2)), dot(row(3), _a.col(3)) );
+    }
+
+    template <class T>
+    mat4<T> mat4<T>::translate(const vec3<T>& offset) const
+    {
+        return mat4<T>(1, 0, 0, offset.x, 0, 1, 0, offset.y, 0, 0, 1, offset.z, 0, 0, 0, 1) * (*this);
+    }
+
+    template <class T>
+    mat4<T> mat4<T>::rotate_y(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat4<T>(cosine, 0, sine, 0, 0, 1, 0, 0, -sine, 0, cosine, 0, 0, 0, 0, 1) * (*this);
+    }
+
+    template <class T>
+    mat4<T> mat4<T>::rotate_x(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat4<T>(1, 0, 0, 0, 0, cosine, -sine, 0, 0, sine, cosine, 0, 0, 0, 0, 1) * (*this);
+    }
+
+    template <class T>
+    mat4<T> mat4<T>::rotate_z(double _d) const
+    {
+        double radius = degree_to_radius(_d);
+        double sine = sin(radius), cosine = cos(radius);
+        return mat4<T>(cosine, -sine, 0, 0, sine, cosine, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) * (*this);
     }
 
 #pragma endregion mat

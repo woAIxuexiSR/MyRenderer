@@ -132,6 +132,21 @@ public:
 
 
 
+class geometry_list : public geometry
+{
+public:
+    std::vector<std::shared_ptr<geometry> > objects;
+
+public:
+    void clear() { objects.clear(); }
+    void add(std::shared_ptr<geometry> _a) { objects.push_back(_a); }
+
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual AABB bounding_box() const override;
+};
+
+
+
 class box : public geometry
 {
 private:
@@ -156,12 +171,11 @@ private:
 
 public:
     translate() {}
-    translate(std::shared_ptr<geometry> _o, const direction& _t) : object(_o), trans(_t) {}
+    translate(std::shared_ptr<geometry> _o, const direction& _t) : object(_o), offset(_t) {}
 
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;
 };
-
 
 
 
@@ -169,26 +183,13 @@ class rotate_y : public geometry
 {
 private:
     std::shared_ptr<geometry> object;
-    double radius;
+    
+    double sine, cosine;
+    AABB box;
 
 public:
     rotate_y() {}
-    rotate_y(std::shared_ptr<geometry> _o, double _degree) : object(_o), radius(degree_to_radius(_degree)) {}
-
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
-    virtual AABB bounding_box() const override;
-};
-
-
-
-class geometry_list : public geometry
-{
-public:
-    std::vector<std::shared_ptr<geometry> > objects;
-
-public:
-    void clear() { objects.clear(); }
-    void add(std::shared_ptr<geometry> _a) { objects.push_back(_a); }
+    rotate_y(std::shared_ptr<geometry> _o, double degree);
 
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;

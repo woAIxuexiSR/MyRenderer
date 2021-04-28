@@ -38,17 +38,24 @@ void framebuffer_test()
 
 void geometry_test()
 {
-    sphere ball1(point(10.1, 10.1, 10.1), 10, nullptr);
-    ray r(point(0, 0, 0), direction(-1, -1, -1));
+    ray r(point(0, 0, 0), direction(1, 0, 0));
+
+    geometry_list world;
+    world.add(make_shared<triangle>(point(2, 0, 0), point(2, 1, 1), point(2, -1, 1), nullptr));
+    
+    BVHnode bvh(world);
 
     hit_record rec;
 
-    cout << (ball1.hit(r, rec) ? "YES" : "NO") << endl;
+    cout << (bvh.hit(r, rec) ? "YES" : "NO") << endl;
+    cout << rec.t << " " << rec.p << endl;
+    cout << rec.normal << endl;
+
 }
 
 inline color ray_color(const ray& r, const BVHnode& world, int depth)
 {
-    static const color background = color(0.5, 0.7, 1.0);
+    static const color background = color(0.0, 0.0, 0.0);
 
     if(depth <= 0) return color(0.0, 0.0, 0.0);
      
@@ -151,7 +158,7 @@ void rt1()
 void rt2()
 {
     const int width = 720 * 1.25, height = 720;
-    const int max_depth = 50;
+    const int max_depth = 100;
     const int sample_per_pixel = 20;
     
     FrameBuffer fb(width, height);
@@ -177,12 +184,10 @@ void rt2()
 
     auto light_material = make_shared<diffuse_light>(color(4.0, 4.0, 4.0));
     //world.add(make_shared<sphere>(point(0, 2.2, -1), 1.5, light_material));
-    
-    world.add(make_shared<yz_rect>(2, -0.5, 2.5, -2, 0, light_material));
-    //world.add(make_shared<triangle>(point(1.0, 2.0, 1.0), point(1.0, 2.0, -1.0), point(-1.0, 2.0, 1.0), light_material));
-    // z -2, 0 , y -0.5 0.5, x 3
-    //world.add(make_shared<triangle>(point(2, -0.5, -2), point(3, -0.5, 0), point(3, 0.5, -2), light_material));
-    //world.add(make_shared<triangle>(point(3, 0.5, -2), point(3, 0.5, 0), point(3, -0.5, 0), light_material));
+
+    auto material4 = make_shared<diffuse>(color(0.7, 0.0, 0.0));
+    world.add(make_shared<triangle>(point(2, -0.5, -2), point(2, -0.5, 0), point(2, 2.5, -2), light_material));
+    world.add(make_shared<triangle>(point(2, 2.5, -2), point(2, 2.5, 0), point(2, -0.5, 0), light_material));
 
     BVHnode bvh(world);
 
@@ -219,7 +224,7 @@ int main()
     //math_test();
     //framebuffer_test();
     //geometry_test();
-    rt1();
+    //rt1();
     //rt2();
 
     // const int N = 10000000;

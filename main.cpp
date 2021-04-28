@@ -8,6 +8,7 @@
 #include "camera/camera.hpp"
 
 using std::make_shared;
+using std::shared_ptr;
 
 color ray_color(const ray& r, const BVHnode& world, int depth)
 {
@@ -36,7 +37,7 @@ void cornell_box()
     const double aspect_ratio = 1.0;
     const int height = 600, width = height * aspect_ratio;
     const int max_depth = 50;
-    const int sample_per_pixel = 20;
+    const int sample_per_pixel = 100;
 
     FrameBuffer fb(width, height);
     
@@ -55,6 +56,16 @@ void cornell_box()
     world.add(make_shared<xz_rect>(0, 0, 555, 0, 555, white));
     world.add(make_shared<xz_rect>(555, 0, 555, 0, 555, white));
     world.add(make_shared<xy_rect>(555, 0, 555, 0, 555, white));
+
+    shared_ptr<geometry> box1 = make_shared<box>(point(0, 0, 0), point(165, 330, 165), white);
+    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<translate>(box1, direction(265, 0, 295));
+    world.add(box1);
+
+    shared_ptr<geometry> box2 = make_shared<box>(point(0, 0, 0), point(165, 165, 165), white);
+    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<translate>(box2, direction(130, 0, 65));
+    world.add(box2);
 
     BVHnode bvh(world);
 

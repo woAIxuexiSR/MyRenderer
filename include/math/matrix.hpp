@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include "utility.hpp"
 #include "vector.hpp"
 
 namespace srm
@@ -49,6 +50,9 @@ namespace srm
         mat2<T> operator/(T _a) const;
         vec2<T> operator*(const vec2<T>& _a) const;
         mat2<T> operator*(const mat2<T>& _a) const;
+
+        /* transform */
+        mat2<T> rotate(double _d) const;
     };
 
     template <class T>
@@ -84,6 +88,11 @@ namespace srm
         mat3<T> operator/(T _a) const;
         vec3<T> operator*(const vec3<T>& _a) const;
         mat3<T> operator*(const mat3<T>& _a) const;
+
+        /* transform */
+        mat3<T> rotate_y(double _d) const;
+        mat3<T> rotate_x(double _d) const;
+        mat3<T> rotate_z(double _d) const;
     };
 
     template <class T>
@@ -120,6 +129,12 @@ namespace srm
         mat4<T> operator/(T _a) const;
         vec4<T> operator*(const vec4<T>& _a) const;
         mat4<T> operator*(const mat4<T>& _a) const;
+
+        /* transform */
+        mat4<T> translate(const vec3<T>& offset) const;
+        mat4<T> rotate_y(double _d) const;
+        mat4<T> rotate_x(double _d) const;
+        mat4<T> rotate_z(double _d) const;
     };
 
 #pragma endregion mat
