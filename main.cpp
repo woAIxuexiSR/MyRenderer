@@ -37,7 +37,7 @@ void cornell_box()
     const double aspect_ratio = 1.0;
     const int height = 600, width = height * aspect_ratio;
     const int max_depth = 50;
-    const int sample_per_pixel = 100;
+    const int sample_per_pixel = 20;
 
     FrameBuffer fb(width, height);
     
@@ -49,6 +49,7 @@ void cornell_box()
     auto white = make_shared<diffuse>(color(.73, .73, .73));
     auto green = make_shared<diffuse>(color(.12, .45, .15));
     auto light = make_shared<diffuse_light>(color(15, 15, 15));
+    auto iso = make_shared<isotropic>(color(1.0, 1.0, 1.0));
 
     world.add(make_shared<yz_rect>(555, 0, 555, 0, 555, green));
     world.add(make_shared<yz_rect>(0, 0, 555, 0, 555, red));
@@ -60,11 +61,13 @@ void cornell_box()
     shared_ptr<geometry> box1 = make_shared<box>(point(0, 0, 0), point(165, 330, 165), white);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, direction(265, 0, 295));
+    //box1 = make_shared<constant_medium>(box1, 0.01, iso);
     world.add(box1);
 
     shared_ptr<geometry> box2 = make_shared<box>(point(0, 0, 0), point(165, 165, 165), white);
     box2 = make_shared<rotate_y>(box2, -18);
     box2 = make_shared<translate>(box2, direction(130, 0, 65));
+    //box2 = make_shared<constant_medium>(box2, 0.01, iso);
     world.add(box2);
 
     BVHnode bvh(world);

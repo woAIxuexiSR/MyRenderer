@@ -195,4 +195,22 @@ public:
     virtual AABB bounding_box() const override;
 };
 
+
+
+class constant_medium : public geometry
+{
+private:
+    std::shared_ptr<geometry> boundary;
+    std::shared_ptr<material> phase_function;   // only isotropic material
+    double neg_inv_density;
+
+public:
+    constant_medium() {}
+    constant_medium(std::shared_ptr<geometry> _b, double _d, std::shared_ptr<material> _t)
+                : boundary(_b), neg_inv_density(-1.0 / _d), phase_function(_t) {}
+
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual AABB bounding_box() const override;
+};
+
 #include "geometry.inl"

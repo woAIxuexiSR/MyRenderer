@@ -303,3 +303,36 @@ AABB rotate_y::bounding_box() const
 {
     return box;
 }
+
+bool constant_medium::hit(const ray& r, hit_record& rec, interval t_interval) const
+{
+    hit_record rec1, rec2;
+    if(!boundary->hit(r, rec1, interval(-infinity, infinity)))
+        return false;
+    if(!boundary->hit(r, rec2, interval(rec1.t + 0.1, infinity)))
+        return false;
+
+    rec1.t = rec1.t > t_interval.x ? rec1.t : t_interval.x;
+    rec2.t = rec2.t < t_interval.y ? rec2.t : t_interval.y;
+
+    if(rec1.t >= rec2.t) return false;
+
+    const double rdir_len = r.get_dir().length();
+    const double dis = (rec2.t - rec1.t) * rdir_len;
+    const double hit_dis = neg_inv_density * log(random_double());
+
+    if(hit_dis > dis) return false;
+
+    rec.t = rec1.t + hit_dis / rdir_len;
+    rec.p = r.at(rec.t);
+    rec.hit_mat = phase_function;
+    rec.uv = (rec1.uv + rec2.uv) * 0.5;
+    rec.set_normal(r.get_dir(), random_sphere_surface());
+
+    return true;
+}
+
+AABB constant_medium::bounding_box() const
+{
+    return boundary->bounding_box();
+}

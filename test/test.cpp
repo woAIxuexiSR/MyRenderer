@@ -211,6 +211,97 @@ void rt2()
     fb.output("../images/test.ppm");
 }
 
+void rt3()
+{
+    const int width = 720 * 1.25, height = 720;
+    const int max_depth = 20;
+    const int sample_per_pixel = 20;
+    
+    FrameBuffer fb(width, height);
+
+    Camera mycamera(point(478, 278, -600), point(278, 278, 0), direction(0, 1, 0), 40.0);
+
+    geometry_list world;
+
+    geometry_list boxes1;
+    auto ground = make_shared<diffuse>(color(0.48, 0.83, 0.53));
+
+    const int boxes_per_side = 20;
+    for (int i = 0; i < boxes_per_side; i++) {
+        for (int j = 0; j < boxes_per_side; j++) {
+            auto w = 100.0;
+            auto x0 = -1000.0 + i * w;
+            auto z0 = -1000.0 + j * w;
+            auto y0 = 0.0;
+            auto x1 = x0 + w;
+            auto y1 = random_double(1, 101);
+            auto z1 = z0 + w;
+
+            boxes1.add(make_shared<box>(point(x0, y0, z0), point(x1, y1, z1), ground));
+        }
+    }
+
+    world.add(make_shared<BVHnode>(boxes1));
+
+    auto light = make_shared<diffuse_light>(color(7, 7, 7));
+    world.add(make_shared<xz_rect>(554, 123, 423, 147, 412, light));
+
+    auto center = point(400, 400, 200);
+    auto sphere_material = make_shared<diffuse>(color(0.7, 0.3, 0.1));
+    world.add(make_shared<sphere>(center, 50, sphere_material));
+
+    world.add(make_shared<sphere>(point(260, 150, 45), 50, make_shared<dielectric>(1.5)));
+    world.add(make_shared<sphere>(point(0, 150, 145), 50, make_shared<glossy>(color(0.8, 0.8, 0.9), 1.0)));
+
+    auto boundary = make_shared<sphere>(point(360, 150, 145), 70, make_shared<dielectric>(1.5));
+    world.add(boundary);
+    auto iso = make_shared<isotropic>(color(0.2, 0.4, 0.9));
+    world.add(make_shared<constant_medium>(boundary, 0.2, iso));
+    
+    boundary = make_shared<sphere>(point(0, 0, 0), 5000, make_shared<dielectric>(1.5));
+    iso = make_shared<isotropic>(color(1, 1, 1));
+    world.add(make_shared<constant_medium>(boundary, .0001, iso));      // There is a problem!!!
+
+    auto emat = make_shared<diffuse>(make_shared<imageTex>("../images/test2.jpg"));
+    world.add(make_shared<sphere>(point(400, 200, 400), 100, emat));
+    auto pertext = make_shared<diffuse>(color(0.1, 0.1, 0.1));
+    world.add(make_shared<sphere>(point(220, 280, 300), 80, pertext));
+
+    geometry_list boxes2;
+    auto white = make_shared<diffuse>(color(.73, .73, .73));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) {
+        boxes2.add(make_shared<sphere>(random_v3(0, 165), 10, white));
+    }
+
+    world.add(make_shared<translate>(
+                make_shared<rotate_y>(make_shared<BVHnode>(boxes2), 15),
+                direction(-100, 270, 395)
+                )
+            );
+
+    BVHnode bvh(world);
+
+    for(int i = 0; i < height; ++i)
+        for(int j = 0; j < width; ++j)
+        {
+            color result(0, 0, 0);
+            for(int k = 0; k < sample_per_pixel; ++k)
+            {
+                double u = (i + random_double()) / height;
+                double v = (j + random_double()) / width;
+
+                ray r = mycamera.get_ray(v, u);
+                color rc = ray_color(r, bvh, max_depth);
+                result = result + rc;
+            }
+            
+            fb.set_pixel(i, j, result / sample_per_pixel);
+        }
+
+    fb.output("../images/test.ppm");
+}
+
 double pdf(const point& p)
 {
     return 1.0 / (4 * pi);
@@ -226,6 +317,7 @@ int main()
     //geometry_test();
     //rt1();
     //rt2();
+    rt3();
 
     // const int N = 10000000;
     // double sum = 0;

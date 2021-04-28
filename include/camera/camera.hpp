@@ -15,7 +15,7 @@ private:
 public:
     Camera(point lookfrom = point(0, 0, 1), 
            point lookat = point(0, 0, -1), 
-           direction up = point(0, 1, 0), 
+           direction up = direction(0, 1, 0), 
            double vfov = 90, 
            double aspect_ratio = 1.25 )
     {
