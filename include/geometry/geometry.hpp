@@ -34,6 +34,10 @@ class geometry
 public:
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const = 0;
     virtual AABB bounding_box() const = 0;
+
+    // sample geometry to get pdf
+    virtual double pdf_value(const ray& r) const { return 0.0; }
+    virtual point random() const { return point(0, 0, 0); }
 };
 
 
@@ -128,6 +132,8 @@ public:
 
     virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
     virtual AABB bounding_box() const override;
+    virtual double pdf_value(const ray& r) const override;
+    virtual point random() const override;
 };
 
 

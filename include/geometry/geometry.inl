@@ -168,6 +168,25 @@ AABB xz_rect::bounding_box() const
     return AABB(point(x0, y - 0.001, z0), point(x1, y + 0.001, z1));
 }
 
+double xz_rect::pdf_value(const ray& r) const
+{
+    hit_record rec;
+    if (!this->hit(r, rec))
+        return 0;
+
+    double area = (x1 - x0) * (z1 - z0);
+    double rlen = r.get_dir().length();
+    double distance_squared = rec.t * rec.t * rlen * rlen;
+    double cosine = fabs(srm::dot(r.get_dir(), rec.normal) / rlen);
+
+    return distance_squared / (cosine * area);
+}
+
+point xz_rect::random() const
+{
+    return point(random_double(x0, x1), y, random_double(z0, z1));
+}
+
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     hit_record tmp_rec;

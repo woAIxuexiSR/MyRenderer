@@ -23,14 +23,6 @@ inline T myclamp(T x, T x_min, T x_max)
     return x;
 }
 
-inline int random_int(int min, int max)
-{
-    static std::uniform_int_distribution<int> dis(min, max);
-    static std::default_random_engine e(time(NULL));
-
-    return dis(e);
-}
-
 inline double random_double()
 {
     static std::uniform_real_distribution<double> dis(0.0, 1.0);
@@ -42,6 +34,16 @@ inline double random_double()
 inline double random_double(double min, double max)
 {
     return (max - min) * random_double() + min;
+}
+
+// [min, max]
+inline int random_int(int min, int max)
+{
+    // can not declare static when using "uniform_int_distribution"
+    double t = static_cast<int>(random_double(min, max + 1));
+    while(t == max + 1) 
+        t = static_cast<int>(random_double(min, max + 1));
+    return t;
 }
 
 inline srm::vec3<double> random_v3()
