@@ -20,7 +20,7 @@ inline color check_nan(const color& c)
     return ans;
 }
 
-const double RR = 0.6;
+const double RR = 0.8;
 
 inline color ray_color(const ray& r, const BVHnode& world, const shared_ptr<geometry>& light, int depth)
 {
@@ -34,22 +34,24 @@ inline color ray_color(const ray& r, const BVHnode& world, const shared_ptr<geom
 
     color emit = rec.hit_mat->emitted(rec.uv);
 
-    color attenuation;
-    ray scattered;
-    double pdf_val;
-    if(!rec.hit_mat->scatter(r, rec, attenuation, scattered, pdf_val))
+    scatter_record srec;
+    if(!rec.hit_mat->scatter(r, rec, srec))
         return emit;
+
+    if(srec.is_specular)
+        return emit + srec.attenuation * ray_color(srec.specular_ray, world, light, depth - 1);
 
     if(random_double() > RR)
         return emit;
 
     mixture_pdf mp;
-    mp.add(make_shared<cosine_pdf>(rec.normal));
     mp.add(make_shared<geometry_pdf>(rec.p, light));
-    scattered = ray(rec.p, mp.generate());
-    pdf_val = mp.value(scattered.get_dir());
+    mp.add(srec.brdf_pdf);
+    
+    ray scattered = ray(rec.p, mp.generate());
+    double pdf_val = mp.value(scattered.get_dir());
 
-    return emit + attenuation * ray_color(scattered, world, light, depth - 1) * rec.hit_mat->brdf_cos(r, rec, scattered) / pdf_val / RR;
+    return emit + srec.attenuation * ray_color(scattered, world, light, depth - 1) * rec.hit_mat->brdf_cos(r, rec, scattered) / pdf_val / RR;
 }
 
 void cornell_box()
@@ -57,7 +59,7 @@ void cornell_box()
     const double aspect_ratio = 1.0;
     const int height = 600, width = height * aspect_ratio;
     const int max_depth = 50;
-    const int sample_per_pixel = 500;
+    const int sample_per_pixel = 50;
 
     FrameBuffer fb(width, height);
     
@@ -69,6 +71,8 @@ void cornell_box()
     auto white = make_shared<diffuse>(color(.73, .73, .73));
     auto green = make_shared<diffuse>(color(.12, .45, .15));
     auto light_material = make_shared<diffuse_light>(color(15, 15, 15));
+    auto aluminum = make_shared<glossy>(color(0.8, 0.85, 0.88), 0.0);
+    auto glass = make_shared<dielectric>(1.5);
 
     world.add(make_shared<yz_rect>(555, 0, 555, 0, 555, green));
     world.add(make_shared<yz_rect>(0, 0, 555, 0, 555, red));
@@ -76,18 +80,25 @@ void cornell_box()
     world.add(make_shared<xz_rect>(555, 0, 555, 0, 555, white));
     world.add(make_shared<xy_rect>(555, 0, 555, 0, 555, white));
 
-    shared_ptr<geometry> box1 = make_shared<box>(point(0, 0, 0), point(165, 330, 165), white);
+    shared_ptr<geometry> ball = make_shared<sphere>(point(190, 90, 190), 90, glass);
+    world.add(ball);
+
+    shared_ptr<geometry> box1 = make_shared<box>(point(0, 0, 0), point(165, 330, 165), aluminum);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, direction(265, 0, 295));
     world.add(box1);
 
-    shared_ptr<geometry> box2 = make_shared<box>(point(0, 0, 0), point(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
-    box2 = make_shared<translate>(box2, direction(130, 0, 65));
-    world.add(box2);
+    // shared_ptr<geometry> box2 = make_shared<box>(point(0, 0, 0), point(165, 165, 165), white);
+    // box2 = make_shared<rotate_y>(box2, -18);
+    // box2 = make_shared<translate>(box2, direction(130, 0, 65));
+    // world.add(box2);
 
     shared_ptr<geometry> light = make_shared<xz_rect>(554.9, 213, 343, 227, 332, light_material);
     world.add(light);
+
+    shared_ptr<geometry_list> lights = make_shared<geometry_list>();
+    lights->add(light);
+    lights->add(ball);
 
     BVHnode bvh(world);
 
@@ -101,7 +112,7 @@ void cornell_box()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                color rc = ray_color(r, bvh, light, max_depth);
+                color rc = ray_color(r, bvh, lights, max_depth);
 
                 result = result + rc;
             }

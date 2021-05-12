@@ -21,7 +21,7 @@ double geometry_pdf::value(const direction& dir) const
 
 direction geometry_pdf::generate() const
 {
-    return object->random() - pos;
+    return object->random(pos);
 }
 
 double mixture_pdf::value(const direction& dir) const

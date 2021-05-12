@@ -37,6 +37,35 @@ AABB sphere::bounding_box() const
     return AABB(center - point(radius), center + point(radius));
 }
 
+double sphere::pdf_value(const ray& r) const
+{
+    hit_record rec;
+    if(!this->hit(r, rec))
+        return 0;
+
+    double cos_theta_max = sqrt(1 - radius * radius / srm::dot(center - r.get_ori(), center - r.get_ori()));
+    double solid_angle = 2 * pi * (1 - cos_theta_max);
+
+    return 1 / solid_angle;
+}
+
+direction sphere::random(const point& o) const
+{
+    direction dir = center - o;
+    
+    double r1 = random_double(), r2 = random_double();
+    double z = 1 + r2 * (sqrt(1 - radius * radius / dot(dir, dir)) - 1);
+    double phi = 2 * pi * r1;
+    double x = cos(phi) * sqrt(1 - z * z);
+    double y = sin(phi) * sqrt(1 - z * z);
+
+    direction udir = dir.normalize();
+    direction tmp = udir.x > 0.9 ? direction(0, 1, 0) : direction(1, 0, 0);
+    direction xdir = srm::cross(udir, tmp).normalize();
+    direction ydir = srm::cross(udir, xdir);
+    return xdir * x + ydir * y + udir * z;
+}
+
 coord sphere::get_sphere_uv(const point& p)
 {
     double theta = acos(-p.y);
@@ -182,9 +211,9 @@ double xz_rect::pdf_value(const ray& r) const
     return distance_squared / (cosine * area);
 }
 
-point xz_rect::random() const
+direction xz_rect::random(const point& o) const
 {
-    return point(random_double(x0, x1), y, random_double(z0, z1));
+    return point(random_double(x0, x1), y, random_double(z0, z1)) - o;
 }
 
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
@@ -218,6 +247,21 @@ AABB geometry_list::bounding_box() const
     }
     
     return ans;
+}
+
+double geometry_list::pdf_value(const ray& r) const
+{
+    double ans = 0.0;
+
+    for(const auto& object : objects)
+        ans += object->pdf_value(r);
+
+    return ans / objects.size();
+}
+    
+direction geometry_list::random(const point& o) const
+{
+    return objects[random_int(0, objects.size() - 1)]->random(o);
 }
 
 box::box(point _m, point _M, std::shared_ptr<material> mat) : m(_m), M(_M)
