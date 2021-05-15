@@ -11,3 +11,4 @@ y = np.array([gaussian(0, 5, item) for item in x])
 
 plt.scatter(x, y)
 plt.show()
+print(1e10)

@@ -31,8 +31,8 @@ public:
     }
     ~FrameBuffer() { delete[] data; }
 
-    color get_pixel(int row, int col) const { return data[row * width + col]; }
-    void set_pixel(int row, int col, color c) { data[row * width + col] = c; }
+    inline color get_pixel(int row, int col) const { return data[row * width + col]; }
+    inline void set_pixel(int row, int col, color c) { data[row * width + col] = c; }
 
     void output(const std::string& filePath, bool gamma_correction = true, MAGIC_NUM type = MAGIC_NUM::P3) const
     {
@@ -56,12 +56,12 @@ public:
                 //std::cout << "\rScanlines remaining: " << j << ' ' << std::flush;
 
                 color c = get_pixel(i, j);
-                if(gamma_correction) c = c.gamma_correction(correction);
                 
                 double m = c.maxv();
-                c = m > 1.0 ? c / m : c;
-                c = c * 255.0;
+                if(m > 1.0) c = c / m;
+                if(gamma_correction) c = c.gamma_correction(correction);
 
+                c = c * 255.0;
                 f << (int)c.x << ' ' << (int)c.y << ' ' << (int)c.z << '\n';
             }
         std::cout << "Done.\n";

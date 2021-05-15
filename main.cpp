@@ -1,7 +1,7 @@
 #include <iostream>
 #include "geometry/geometry.hpp"
 #include "geometry/bvhnode.hpp"
-#include "geometry/ray.hpp"
+#include "math/ray.hpp"
 #include "material/material.hpp"
 #include "material/texture.hpp"
 #include "camera/framebuffer.hpp"
@@ -11,16 +11,7 @@
 using std::make_shared;
 using std::shared_ptr;
 
-inline color check_nan(const color& c)
-{
-    color ans = c;
-    if(ans.x != ans.x) ans.x = 0;
-    if(ans.y != ans.y) ans.y = 0;
-    if(ans.z != ans.z) ans.z = 0;
-    return ans;
-}
-
-const double RR = 0.8;
+const double RR = 0.6;
 
 inline color ray_color(const ray& r, const BVHnode& world, const shared_ptr<geometry>& light, int depth)
 {
@@ -83,7 +74,7 @@ void cornell_box()
     shared_ptr<geometry> ball = make_shared<sphere>(point(190, 90, 190), 90, glass);
     world.add(ball);
 
-    shared_ptr<geometry> box1 = make_shared<box>(point(0, 0, 0), point(165, 330, 165), aluminum);
+    shared_ptr<geometry> box1 = make_shared<box>(point(0, 0, 0), point(165, 330, 165), white);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, direction(265, 0, 295));
     world.add(box1);
@@ -97,8 +88,7 @@ void cornell_box()
     world.add(light);
 
     shared_ptr<geometry_list> lights = make_shared<geometry_list>();
-    lights->add(light);
-    lights->add(ball);
+    lights->add(light); lights->add(ball);
 
     BVHnode bvh(world);
 
@@ -117,7 +107,6 @@ void cornell_box()
                 result = result + rc;
             }
 
-            result = check_nan(result);
             fb.set_pixel(i, j, result / sample_per_pixel);
         }
 

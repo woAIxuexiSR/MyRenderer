@@ -2,8 +2,6 @@
 
 bool diffuse::scatter(const ray& r, const hit_record& rec, scatter_record& srec) const
 {
-    direction out = rec.normal.normalize() + random_sphere_surface();
-
     srec.attenuation = albedo->get_color(rec.uv);
     srec.brdf_pdf = std::make_shared<cosine_pdf>(rec.normal);
     srec.is_specular = false;
@@ -13,30 +11,30 @@ bool diffuse::scatter(const ray& r, const hit_record& rec, scatter_record& srec)
 
 double diffuse::brdf_cos(const ray& r, const hit_record& rec, const ray& scattered) const
 {
-    double brdf = 1.0 / pi;
-    double cosine = srm::dot(rec.normal, scattered.get_dir());
+    double brdf = 1.0 / PI;
+    double cosine = dot(rec.normal, scattered.get_dir());
     return (cosine <= 0) ? 0 : brdf * cosine;
 }
 
 bool specular::scatter(const ray& r, const hit_record& rec, scatter_record& srec) const
 {
     direction rdir = r.get_dir();
-    direction out = rdir - rec.normal * (srm::dot(rdir, rec.normal) * 2 / rec.normal.length());
+    direction out = rdir - rec.normal * (dot(rdir, rec.normal) * 2 / rec.normal.length());
 
     srec.specular_ray = ray(rec.p, out);
     srec.is_specular = true;
     srec.attenuation = albedo->get_color(rec.uv);
     srec.brdf_pdf = nullptr;
-    return srm::dot(out, rec.normal) > 0;
+    return dot(out, rec.normal) > 0;
 }
 
 bool glossy::scatter(const ray& r, const hit_record& rec, scatter_record& srec) const
 {
     direction rdir = r.get_dir();
-    direction out = rdir - rec.normal * (srm::dot(rdir, rec.normal) * 2 / rec.normal.length());
+    direction out = rdir - rec.normal * (dot(rdir, rec.normal) * 2 / rec.normal.length());
     out = out.normalize() + random_sphere() * radius;
 
-    if(srm::dot(out, rec.normal) < 0)
+    if(dot(out, rec.normal) < 0)
         return false;
     
     srec.specular_ray = ray(rec.p, out);
@@ -51,10 +49,10 @@ bool dielectric::scatter(const ray& r, const hit_record& rec, scatter_record& sr
     double refract_ratio = rec.front_face ? (1.0 / index) : index;
 
     direction rdir = r.get_dir().normalize(), normal = rec.normal.normalize();
-    double cosine_theta = -srm::dot(rdir, normal);
+    double cosine_theta = -dot(rdir, normal);
     
     direction out_perpendicular = (rdir + normal * cosine_theta) * refract_ratio;
-    double sine_theta_prime = srm::dot(out_perpendicular, out_perpendicular);
+    double sine_theta_prime = dot(out_perpendicular, out_perpendicular);
 
     ray scattered;
     if(sine_theta_prime > 1.0 || reflectance(cosine_theta, refract_ratio) > random_double())          // reflect

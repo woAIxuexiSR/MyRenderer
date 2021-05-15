@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include "math/utility.hpp"
-#include "geometry/ray.hpp"
+#include "math/ray.hpp"
 
 class Camera
 {
@@ -26,8 +26,8 @@ public:
         direction forward = lookat - lookfrom;
 
         origin = lookfrom;
-        horizontal = srm::cross(forward, up).normalize() * width;
-        vertical = srm::cross(horizontal, forward).normalize() * height;
+        horizontal = cross(forward, up).normalize() * width;
+        vertical = cross(horizontal, forward).normalize() * height;
         low_left = forward.normalize() * focal_length - horizontal * 0.5 - vertical * 0.5;
     }
 

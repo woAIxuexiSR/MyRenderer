@@ -7,12 +7,13 @@
 #include <time.h>
 #include "vector.hpp"
 
-const double infinity = std::numeric_limits<double>::infinity();
-const double pi = std::acos(-1);
+const double INF = std::numeric_limits<double>::infinity();
+const double PI = std::acos(-1);
+const double EPS = 1e-7;
 
 inline double degree_to_radius(double degree)
 {
-    return degree / 180.0 * pi;
+    return degree / 180.0 * PI;
 }
 
 template <class T>
@@ -23,6 +24,7 @@ inline T myclamp(T x, T x_min, T x_max)
     return x;
 }
 
+// [0, 1)
 inline double random_double()
 {
     static std::uniform_real_distribution<double> dis(0.0, 1.0);
@@ -31,6 +33,7 @@ inline double random_double()
     return dis(e);
 }
 
+// [min, max)
 inline double random_double(double min, double max)
 {
     return (max - min) * random_double() + min;
@@ -41,45 +44,45 @@ inline int random_int(int min, int max)
 {
     // can not declare static when using "uniform_int_distribution"
     double t = static_cast<int>(random_double(min, max + 1));
-    while(t == max + 1) 
-        t = static_cast<int>(random_double(min, max + 1));
     return t;
 }
 
-inline srm::vec3<double> random_v3()
+// [0, 1)
+inline vec3<double> random_v3()
 {
-    return srm::vec3<double>(random_double(), random_double(), random_double());
+    return vec3<double>(random_double(), random_double(), random_double());
 }
 
-inline srm::vec3<double> random_v3(double min, double max)
+// [min, max)
+inline vec3<double> random_v3(double min, double max)
 {
-    return srm::vec3<double>(random_double(min, max), random_double(min, max), random_double(min, max));
+    return vec3<double>(random_double(min, max), random_double(min, max), random_double(min, max));
 }
 
-inline srm::vec3<double> random_sphere()
+inline vec3<double> random_sphere()
 {
-    srm::vec3<double> p = random_v3(-1.0, 1.0);
-    while(srm::dot(p, p) > 1)
+    vec3<double> p = random_v3(-1.0, 1.0);
+    while(p.length_square() > 1)
         p = random_v3(-1.0, 1.0);
     return p;
 }
 
-inline srm::vec3<double> random_hemisphere(const srm::vec3<double>& up)
+inline vec3<double> random_hemisphere(const vec3<double>& up)
 {
-    srm::vec3<double> p = random_sphere();
-    if(srm::dot(p, up) < 0) p = -p;
+    vec3<double> p = random_sphere();
+    if(p.dot(up) < 0) p = -p;
     return p;
 }
 
-inline srm::vec3<double> random_sphere_surface()
+inline vec3<double> random_sphere_surface()
 {
-    auto p = random_sphere();
+    vec3<double> p = random_sphere();
     return p.normalize();
 }
 
-inline srm::vec3<double> random_hemisphere_surface(const srm::vec3<double>& up)
+inline vec3<double> random_hemisphere_surface(const vec3<double>& up)
 {
-    auto p = random_sphere_surface();
-    if(srm::dot(p, up) < 0) p = -p;
+    vec3<double> p = random_sphere_surface();
+    if(p.dot(up) < 0) p = -p;
     return p;
 }

@@ -5,7 +5,7 @@
 #include "math/vector.hpp"
 #include "math/matrix.hpp"
 #include "math/utility.hpp"
-#include "ray.hpp"
+#include "math/ray.hpp"
 #include "aabb.hpp"
 
 class material;
@@ -20,7 +20,8 @@ public:
     bool front_face;
     coord uv;
 
-    void set_normal(const direction& rdir, const direction& norm)
+    // |norm| = 1
+    inline void set_normal(const direction& rdir, const direction& norm)
     {
         front_face = dot(rdir, norm) < 0;
         normal = front_face ? norm : -norm;
@@ -32,7 +33,7 @@ public:
 class geometry
 {
 public:
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const = 0;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const = 0;
     virtual AABB bounding_box() const = 0;
 
     // sample geometry to get pdf
@@ -53,7 +54,7 @@ public:
     sphere() {}
     sphere(const point& _c, double _r, std::shared_ptr<material> _m) : center(_c), radius(_r), mat(_m) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
     virtual double pdf_value(const ray& r) const override;
     virtual direction random(const point& o) const override;
@@ -76,9 +77,9 @@ public:
     triangle() {}
     triangle(const point& _a, const point& _b, const point& _c, std::shared_ptr<material> _m,
             const coord& _tc1 = coord(0, 0), const coord& _tc2 = coord(0, 0), const coord& _tc3 = coord(0, 0))
-            : vertex{_a, _b, _c}, mat(_m), textureCoord{_tc1, _tc2, _tc3} { normal = srm::cross(_a - _b, _a - _c).normalize(); }
+            : vertex{_a, _b, _c}, mat(_m), textureCoord{_tc1, _tc2, _tc3} { normal = cross(_a - _b, _a - _c).normalize(); }
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
 };
 
@@ -96,8 +97,10 @@ public:
     yz_rect(double _x, double _y0, double _y1, double _z0, double _z1, std::shared_ptr<material> _m)
             : x(_x), y0(_y0), y1(_y1), z0(_z0), z1(_z1), mat(_m) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
+    virtual double pdf_value(const ray& r) const override;
+    virtual direction random(const point& o) const override;
 };
 
 
@@ -114,8 +117,10 @@ public:
     xy_rect(double _z, double _x0, double _x1, double _y0, double _y1, std::shared_ptr<material> _m)
             : z(_z), x0(_x0), x1(_x1), y0(_y0), y1(_y1), mat(_m) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
+    virtual double pdf_value(const ray& r) const override;
+    virtual direction random(const point& o) const override;
 };
 
 
@@ -132,7 +137,7 @@ public:
     xz_rect(double _y, double _x0, double _x1, double _z0, double _z1, std::shared_ptr<material> _m)
             : y(_y), x0(_x0), x1(_x1), z0(_z0), z1(_z1), mat(_m) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
     virtual double pdf_value(const ray& r) const override;
     virtual direction random(const point& o) const override;
@@ -149,7 +154,7 @@ public:
     void clear() { objects.clear(); }
     void add(std::shared_ptr<geometry> _a) { objects.push_back(_a); }
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
     virtual double pdf_value(const ray& r) const override;
     virtual direction random(const point& o) const override;
@@ -167,7 +172,7 @@ public:
     box() {}
     box(point _m, point _M, std::shared_ptr<material> mat);
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
 };
 
@@ -183,7 +188,7 @@ public:
     translate() {}
     translate(std::shared_ptr<geometry> _o, const direction& _t) : object(_o), offset(_t) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
 };
 
@@ -201,7 +206,7 @@ public:
     rotate_y() {}
     rotate_y(std::shared_ptr<geometry> _o, double degree);
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
 };
 
@@ -219,7 +224,7 @@ public:
     constant_medium(std::shared_ptr<geometry> _b, double _d, std::shared_ptr<material> _t)
                 : boundary(_b), neg_inv_density(-1.0 / _d), phase_function(_t) {}
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
 };
 

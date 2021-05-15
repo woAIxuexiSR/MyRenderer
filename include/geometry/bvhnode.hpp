@@ -16,7 +16,7 @@ public:
     BVHnode(const geometry_list& list);
     BVHnode(std::vector<std::shared_ptr<geometry> >& src_objects, int start, int end);
 
-    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, infinity)) const override;
+    virtual bool hit(const ray& r, hit_record& rec, interval t_interval = interval(0.001, INF)) const override;
     virtual AABB bounding_box() const override;
 };
 

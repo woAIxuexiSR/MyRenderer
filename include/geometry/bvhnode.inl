@@ -40,7 +40,8 @@ BVHnode::BVHnode(std::vector<std::shared_ptr<geometry> >& src_objects, int start
 {
     if(end - start == 1)
     {
-        left = right = src_objects[start];
+        left = src_objects[start];
+        right = nullptr;
     }
     else if(end - start == 2)
     {
@@ -70,9 +71,10 @@ bool BVHnode::hit(const ray& r, hit_record& rec, interval t_interval) const
     if(!box.hit(r, t_interval))
         return false;
 
-    bool hit_left = left->hit(r, rec, t_interval);
+    bool hit_left = false, hit_right = false;
+    if(left) hit_left = left->hit(r, rec, t_interval);
     if(hit_left) t_interval.y = rec.t;
-    bool hit_right = right->hit(r, rec, t_interval);
+    if(right) hit_right = right->hit(r, rec, t_interval);
 
     return hit_left || hit_right;
 }

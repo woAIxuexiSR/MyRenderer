@@ -1,7 +1,8 @@
 #pragma once
 
 #include "math/vector.hpp"
-#include "ray.hpp"
+#include "math/ray.hpp"
+#include "math/utility.hpp"
 
 inline bool check_cross(double& t_min, double& t_max, double t0, double t1)
 {
@@ -35,12 +36,32 @@ public:
         double t_min = t_interval.x, t_max = t_interval.y;
         point rori = r.get_ori(), rdir = r.get_dir();
 
-        if(!check_cross(t_min, t_max, (minimum.x - rori.x) / rdir.x, (maximum.x - rori.x) / rdir.x))
+        if(fabs(rdir.x) < EPS)
+        {
+            if(rori.x < minimum.x || rori.x > maximum.x)
+                return false;
+        }
+        else if(!check_cross(t_min, t_max, (minimum.x - rori.x) / rdir.x, (maximum.x - rori.x) / rdir.x))
             return false;
-        if(!check_cross(t_min, t_max, (minimum.y - rori.y) / rdir.y, (maximum.y - rori.y) / rdir.y))
+
+
+        if(fabs(rdir.y) < EPS)
+        {
+            if(rori.y < minimum.y || rori.y > maximum.y)
+                return false;
+        }
+        else if(!check_cross(t_min, t_max, (minimum.y - rori.y) / rdir.y, (maximum.y - rori.y) / rdir.y))
             return false;
-        if(!check_cross(t_min, t_max, (minimum.z - rori.z) / rdir.z, (maximum.z - rori.z) / rdir.z))
+
+
+        if(fabs(rdir.z) < EPS)
+        {
+            if(rori.z < minimum.z || rori.z > maximum.z)
+                return false;
+        }
+        else if(!check_cross(t_min, t_max, (minimum.z - rori.z) / rdir.z, (maximum.z - rori.z) / rdir.z))
             return false;
+
 
         return true;
     }

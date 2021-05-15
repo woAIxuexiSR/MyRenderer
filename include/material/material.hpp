@@ -13,6 +13,8 @@ public:
     std::shared_ptr<pdf> brdf_pdf;
 };
 
+
+
 class material
 {
 private:

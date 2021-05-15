@@ -2,14 +2,14 @@
 
 double cosine_pdf::value(const direction& dir) const
 {
-    double cosine = srm::dot(normal, dir);
-    return (cosine <= 0) ? 0 : cosine / pi;
+    double cosine = dot(normal, dir);
+    return (cosine <= 0) ? 0 : cosine / PI;
 }
     
 direction cosine_pdf::generate() const
 {
     direction dir = normal + random_sphere_surface();
-    if(srm::dot(dir, dir) < srm::EPS) 
+    if(dir.length_square() < EPS) 
         dir = normal;
     return dir.normalize();
 }

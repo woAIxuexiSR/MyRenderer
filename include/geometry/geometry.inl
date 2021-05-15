@@ -3,21 +3,21 @@
 bool sphere::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     // | (ori + t * dir) - center | = r ^ 2
+    // |dir| = 1
 
     direction rdir = r.get_dir(), dis = r.get_ori() - center;
 
-    double a = srm::dot(rdir, rdir);
-    double half_b = srm::dot(rdir, dis);
-    double c = srm::dot(dis, dis) - radius * radius;
+    double half_b = dot(rdir, dis);
+    double c = dot(dis, dis) - radius * radius;
 
-    double delta = half_b * half_b - a * c;
+    double delta = half_b * half_b - c;
     if(delta < 0) return false;
     delta = sqrt(delta);
 
-    double ans = (-half_b - delta) / a;
+    double ans = -half_b - delta;
     if(!t_interval.in_interval(ans))
     {
-        ans = (-half_b + delta) / a;
+        ans = -half_b + delta;
         if(!t_interval.in_interval(ans))
             return false;
     }
@@ -43,8 +43,8 @@ double sphere::pdf_value(const ray& r) const
     if(!this->hit(r, rec))
         return 0;
 
-    double cos_theta_max = sqrt(1 - radius * radius / srm::dot(center - r.get_ori(), center - r.get_ori()));
-    double solid_angle = 2 * pi * (1 - cos_theta_max);
+    double cos_theta_max = sqrt(1 - radius * radius / (center - r.get_ori()).length_square());
+    double solid_angle = 2 * PI * (1 - cos_theta_max);
 
     return 1 / solid_angle;
 }
@@ -55,37 +55,37 @@ direction sphere::random(const point& o) const
     
     double r1 = random_double(), r2 = random_double();
     double z = 1 + r2 * (sqrt(1 - radius * radius / dot(dir, dir)) - 1);
-    double phi = 2 * pi * r1;
+    double phi = 2 * PI * r1;
     double x = cos(phi) * sqrt(1 - z * z);
     double y = sin(phi) * sqrt(1 - z * z);
 
     direction udir = dir.normalize();
     direction tmp = udir.x > 0.9 ? direction(0, 1, 0) : direction(1, 0, 0);
-    direction xdir = srm::cross(udir, tmp).normalize();
-    direction ydir = srm::cross(udir, xdir);
+    direction xdir = cross(udir, tmp).normalize();
+    direction ydir = cross(udir, xdir);
     return xdir * x + ydir * y + udir * z;
 }
 
 coord sphere::get_sphere_uv(const point& p)
 {
     double theta = acos(-p.y);
-    double phi = atan2(-p.z, p.x) + pi;
+    double phi = atan2(-p.z, p.x) + PI;
 
-    return coord(phi / (2 * pi), theta / pi);
+    return coord(phi / (2 * PI), theta / PI);
 }
 
 bool triangle::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     // ori + t * dir = A * x + B * y + C * (1 - x - y)
 
-    srm::mat3<double> m(r.get_dir(), vertex[2] - vertex[0], vertex[2] - vertex[1]);
-    srm::vec3<double> rg = vertex[2] - r.get_ori();
+    mat3<double> m(r.get_dir(), vertex[2] - vertex[0], vertex[2] - vertex[1]);
+    vec3<double> rg = vertex[2] - r.get_ori();
 
-    double t = m.determinant();
-    if(fabs(t) < srm::EPS)
+    mat3<double> inv = m.inverse();
+    if(inv[0][0] == -1 && inv[0][1] == -1 && inv[0][2] == -1)
         return false;
 
-    srm::vec3<double> txy = m.inverse() * rg;
+    vec3<double> txy = inv * rg;
     
     interval xy_interval(0, 1);
     if( !t_interval.in_interval(txy.x) || !xy_interval.in_interval(txy.y) || !xy_interval.in_interval(txy.z) || !xy_interval.in_interval(1 - txy.y - txy.z) )
@@ -109,9 +109,9 @@ AABB triangle::bounding_box() const
             fmax(fmax(vertex[0].y, vertex[1].y), vertex[2].y),
             fmax(fmax(vertex[0].z, vertex[1].z), vertex[2].z));
 
-    if(fabs(M.x - m.x) < srm::EPS) M.x += 0.01, m.x -= 0.01;
-    if(fabs(M.y - m.y) < srm::EPS) M.y += 0.01, m.x -= 0.01;
-    if(fabs(M.z - m.z) < srm::EPS) M.z += 0.01, m.x -= 0.01;
+    if(fabs(M.x - m.x) < EPS) M.x += 0.01, m.x -= 0.01;
+    if(fabs(M.y - m.y) < EPS) M.y += 0.01, m.x -= 0.01;
+    if(fabs(M.z - m.z) < EPS) M.z += 0.01, m.x -= 0.01;
 
     return AABB(m, M);
 }
@@ -121,7 +121,7 @@ bool yz_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
     point rori = r.get_ori();
     direction rdir = r.get_dir();
 
-    double t = fabs(rdir.x) < srm::EPS ? -1 : (x - rori.x) / rdir.x;
+    double t = fabs(rdir.x) < EPS ? -INF : (x - rori.x) / rdir.x;
     if(!t_interval.in_interval(t))
         return false;
     
@@ -143,12 +143,30 @@ AABB yz_rect::bounding_box() const
     return AABB(point(x - 0.001, y0, z0), point(x + 0.001, y1, z1));
 }
 
+double yz_rect::pdf_value(const ray& r) const
+{
+    hit_record rec;
+    if (!this->hit(r, rec))
+        return 0;
+
+    double area = (y1 - y0) * (z1 - z0);
+    double distance_squared = rec.t * rec.t;
+    double cosine = fabs(dot(r.get_dir(), rec.normal));
+
+    return distance_squared / (cosine * area);
+}
+
+direction yz_rect::random(const point& o) const
+{
+    return point(x, random_double(y0, y1), random_double(z0, z1)) - o;
+}
+
 bool xy_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     point rori = r.get_ori();
     direction rdir = r.get_dir();
 
-    double t = fabs(rdir.z) < srm::EPS ? -1 : (z - rori.z) / rdir.z;
+    double t = fabs(rdir.z) < EPS ? -INF : (z - rori.z) / rdir.z;
     if(!t_interval.in_interval(t))
         return false;
     
@@ -170,12 +188,30 @@ AABB xy_rect::bounding_box() const
     return AABB(point(x0, y0, z - 0.001), point(x1, y1, z + 0.001));
 }
 
+double xy_rect::pdf_value(const ray& r) const
+{
+    hit_record rec;
+    if (!this->hit(r, rec))
+        return 0;
+
+    double area = (x1 - x0) * (y1 - y0);
+    double distance_squared = rec.t * rec.t;
+    double cosine = fabs(dot(r.get_dir(), rec.normal));
+
+    return distance_squared / (cosine * area);
+}
+
+direction xy_rect::random(const point& o) const
+{
+    return point(random_double(x0, x1), random_double(y0, y1), z) - o;
+}
+
 bool xz_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     point rori = r.get_ori();
     direction rdir = r.get_dir();
 
-    double t = fabs(rdir.y) < srm::EPS ? -1 : (y - rori.y) / rdir.y;
+    double t = fabs(rdir.y) < EPS ? -INF : (y - rori.y) / rdir.y;
     if(!t_interval.in_interval(t))
         return false;
     
@@ -204,9 +240,8 @@ double xz_rect::pdf_value(const ray& r) const
         return 0;
 
     double area = (x1 - x0) * (z1 - z0);
-    double rlen = r.get_dir().length();
-    double distance_squared = rec.t * rec.t * rlen * rlen;
-    double cosine = fabs(srm::dot(r.get_dir(), rec.normal) / rlen);
+    double distance_squared = rec.t * rec.t;
+    double cosine = fabs(dot(r.get_dir(), rec.normal));
 
     return distance_squared / (cosine * area);
 }
@@ -335,7 +370,8 @@ rotate_y::rotate_y(std::shared_ptr<geometry> _o, double degree) : object(_o)
 
 bool rotate_y::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
-    point rori = r.get_ori(); direction rdir = r.get_dir();
+    point rori = r.get_ori(); 
+    direction rdir = r.get_dir();
     
     double tmpx, tmpz;
 
@@ -370,9 +406,9 @@ AABB rotate_y::bounding_box() const
 bool constant_medium::hit(const ray& r, hit_record& rec, interval t_interval) const
 {
     hit_record rec1, rec2;
-    if(!boundary->hit(r, rec1, interval(-infinity, infinity)))
+    if(!boundary->hit(r, rec1, interval(-INF, INF)))
         return false;
-    if(!boundary->hit(r, rec2, interval(rec1.t + 0.1, infinity)))
+    if(!boundary->hit(r, rec2, interval(rec1.t + 0.1, INF)))
         return false;
 
     rec1.t = rec1.t > t_interval.x ? rec1.t : t_interval.x;
@@ -380,13 +416,12 @@ bool constant_medium::hit(const ray& r, hit_record& rec, interval t_interval) co
 
     if(rec1.t >= rec2.t) return false;
 
-    const double rdir_len = r.get_dir().length();
-    const double dis = (rec2.t - rec1.t) * rdir_len;
+    const double dis = rec2.t - rec1.t;
     const double hit_dis = neg_inv_density * log(random_double());
 
     if(hit_dis > dis) return false;
 
-    rec.t = rec1.t + hit_dis / rdir_len;
+    rec.t = rec1.t + hit_dis;
     rec.p = r.at(rec.t);
     rec.hit_mat = phase_function;
     rec.uv = (rec1.uv + rec2.uv) * 0.5;
