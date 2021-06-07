@@ -149,16 +149,26 @@ double yz_rect::pdf_value(const ray& r) const
     if (!this->hit(r, rec))
         return 0;
 
-    double area = (y1 - y0) * (z1 - z0);
+    double S = (y1 - y0) * (z1 - z0);
     double distance_squared = rec.t * rec.t;
     double cosine = fabs(dot(r.get_dir(), rec.normal));
 
-    return distance_squared / (cosine * area);
+    return distance_squared / (cosine * S);
 }
 
 direction yz_rect::random(const point& o) const
 {
     return point(x, random_double(y0, y1), random_double(z0, z1)) - o;
+}
+
+point yz_rect::random_sample_surface() const
+{
+    return point(x, random_double(y0, y1), random_double(z0, z1));
+}
+
+double yz_rect::area() const
+{
+    return (y1 - y0) * (z1 - z0);
 }
 
 bool xy_rect::hit(const ray& r, hit_record& rec, interval t_interval) const
@@ -194,11 +204,11 @@ double xy_rect::pdf_value(const ray& r) const
     if (!this->hit(r, rec))
         return 0;
 
-    double area = (x1 - x0) * (y1 - y0);
+    double S = (x1 - x0) * (y1 - y0);
     double distance_squared = rec.t * rec.t;
     double cosine = fabs(dot(r.get_dir(), rec.normal));
 
-    return distance_squared / (cosine * area);
+    return distance_squared / (cosine * S);
 }
 
 direction xy_rect::random(const point& o) const
@@ -239,16 +249,26 @@ double xz_rect::pdf_value(const ray& r) const
     if (!this->hit(r, rec))
         return 0;
 
-    double area = (x1 - x0) * (z1 - z0);
+    double S = (x1 - x0) * (z1 - z0);
     double distance_squared = rec.t * rec.t;
     double cosine = fabs(dot(r.get_dir(), rec.normal));
 
-    return distance_squared / (cosine * area);
+    return distance_squared / (cosine * S);
 }
 
 direction xz_rect::random(const point& o) const
 {
     return point(random_double(x0, x1), y, random_double(z0, z1)) - o;
+}
+
+point xz_rect::random_sample_surface() const
+{
+    return point(random_double(x0, x1), y, random_double(z0, z1));
+}
+
+double xz_rect::area() const
+{
+    return (x1 - x0) * (z1 - z0);
 }
 
 bool geometry_list::hit(const ray& r, hit_record& rec, interval t_interval) const
@@ -297,6 +317,15 @@ double geometry_list::pdf_value(const ray& r) const
 direction geometry_list::random(const point& o) const
 {
     return objects[random_int(0, objects.size() - 1)]->random(o);
+}
+
+double geometry_list::area() const
+{
+    double S = 0.0;
+    for(const auto& object : objects)
+        S += object->area();
+
+    return S;
 }
 
 box::box(point _m, point _M, std::shared_ptr<material> mat) : m(_m), M(_M)

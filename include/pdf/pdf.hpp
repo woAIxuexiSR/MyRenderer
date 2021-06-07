@@ -3,6 +3,7 @@
 #include "math/utility.hpp"
 #include "math/matrix.hpp"
 #include "geometry/geometry.hpp"
+#include "gmm/gmm.hpp"
 
 class pdf
 {
@@ -52,6 +53,20 @@ private:
 public:
     mixture_pdf() {}
     void add(std::shared_ptr<pdf> _p) { pdf_list.push_back(_p); }
+
+    virtual double value(const direction& dir) const override;
+    virtual direction generate() const override;
+};
+
+
+
+class gmm_pdf : public pdf
+{
+private:
+    GMM model;
+
+public:
+    gmm_pdf() {}
 
     virtual double value(const direction& dir) const override;
     virtual direction generate() const override;

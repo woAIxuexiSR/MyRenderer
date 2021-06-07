@@ -1,7 +1,5 @@
 #include "bvhnode.hpp"
 
-enum class AXIS { AXIS_X, AXIS_Y, AXIS_Z };
-
 bool box_compare(const std::shared_ptr<geometry>& a, const std::shared_ptr<geometry>& b, AXIS axis)
 {
     AABB abox = a->bounding_box();
@@ -36,6 +34,7 @@ BVHnode::BVHnode(const geometry_list& list)
     *this = BVHnode(objects, 0, objects.size());
 }
 
+// [start, end)
 BVHnode::BVHnode(std::vector<std::shared_ptr<geometry> >& src_objects, int start, int end)
 {
     if(end - start == 1)

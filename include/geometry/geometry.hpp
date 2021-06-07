@@ -39,6 +39,10 @@ public:
     // sample geometry to get pdf
     virtual double pdf_value(const ray& r) const { return 0.0; }
     virtual direction random(const point& o) const { return point(0, 0, 0); }
+
+    // sample light surface
+    virtual point random_sample_surface() const { return point(0, 0, 0); }
+    virtual double area() const { return 0.0; };
 };
 
 
@@ -101,6 +105,9 @@ public:
     virtual AABB bounding_box() const override;
     virtual double pdf_value(const ray& r) const override;
     virtual direction random(const point& o) const override;
+    
+    virtual point random_sample_surface() const override;
+    virtual double area() const override;
 };
 
 
@@ -141,6 +148,9 @@ public:
     virtual AABB bounding_box() const override;
     virtual double pdf_value(const ray& r) const override;
     virtual direction random(const point& o) const override;
+
+    virtual point random_sample_surface() const override;
+    virtual double area() const override;
 };
 
 
@@ -158,6 +168,8 @@ public:
     virtual AABB bounding_box() const override;
     virtual double pdf_value(const ray& r) const override;
     virtual direction random(const point& o) const override;
+
+    virtual double area() const override;
 };
 
 

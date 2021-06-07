@@ -35,6 +35,12 @@ mat2<T> mat2<T>::inverse() const
 }
 
 template <class T>
+mat2<T> mat2<T>::transpose() const
+{
+    return mat2<T>(d[0], d[2], d[1], d[3]);
+}
+
+template <class T>
 mat2<T> mat2<T>::operator-() const
 {
     return mat2<T>(-d[0], -d[1], -d[2], -d[3]);
@@ -146,6 +152,12 @@ mat3<T> mat3<T>::inverse() const
     return mat3<T>(d[4] * d[8] - d[5] * d[7], -(d[1] * d[8] - d[2] * d[7]), d[1] * d[5] - d[2] * d[4],
                 -(d[3] * d[8] - d[5] * d[6]), d[0] * d[8] - d[2] * d[6], -(d[0] * d[5] - d[2] * d[3]),
                 d[3] * d[7] - d[4] * d[6], -(d[0] * d[7] - d[1] * d[6]), d[0] * d[4] - d[1] * d[3]) / det;
+}
+
+template <class T>
+mat3<T> mat3<T>::transpose() const
+{
+    return mat3<T>(d[0], d[3], d[6], d[1], d[4], d[7], d[2], d[5], d[8]);
 }
 
 template <class T>
@@ -315,6 +327,13 @@ mat4<T> mat4<T>::inverse() const
                 -( d[0] * (d[5] * d[14] - d[6] * d[13]) - d[1] * (d[4] * d[14] - d[6] * d[12]) + d[2] * (d[4] * d[13] - d[5] * d[12]) ),
                 d[0] * (d[5] * d[10] - d[6] * d[9]) - d[1] * (d[4] * d[10] - d[6] * d[8]) + d[2] * (d[4] * d[9] - d[5] * d[8])
                 ) / det;
+}
+
+template <class T>
+mat4<T> mat4<T>::transpose() const
+{
+    return mat4<T>(d[0], d[4], d[8], d[12], d[1], d[5], d[9], d[13],
+                d[2], d[6], d[10], d[14], d[3], d[7], d[11], d[15]);
 }
 
 template <class T>

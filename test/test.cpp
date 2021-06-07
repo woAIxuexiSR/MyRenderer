@@ -7,9 +7,10 @@
 #include "geometry/geometry.hpp"
 #include "material/material.hpp"
 #include "geometry/bvhnode.hpp"
+#include "kdtree/kdTree.hpp"
+#include "gmm/gmm.hpp"
 
 using namespace std;
-using namespace srm;
 
 void math_test()
 {
@@ -53,25 +54,189 @@ void geometry_test()
 
 }
 
-inline color ray_color(const ray& r, const BVHnode& world, int depth)
+void GMM_test()
 {
-    static const color background = color(0.0, 0.0, 0.0);
+    GMM g(4);
 
-    if(depth <= 0) return color(0.0, 0.0, 0.0);
-     
-    hit_record rec;
-    if(world.hit(r, rec))
+    std::default_random_engine e;
+	std::normal_distribution<double> nx(0, 1);
+    std::normal_distribution<double> ny(0, 1);
+
+    mat2<double> A(1.1, 2, 0.3, 1.4);
+    mat2<double> B(1.45, -0.3, -1.4, 1.7);
+    mat2<double> C(2.1, 0.4, 1.1, -0.5);
+
+    vec2<double> muA(2, 1), muB(-1, 3), muC(5, 5);
+    mat2<double> sigmaA = A * A.transpose();
+    mat2<double> sigmaB = B * B.transpose();
+    mat2<double> sigmaC = C * C.transpose();
+
+    std::vector<vec2<double> > data;
+    for(int i = 0; i < 10; ++i)
     {
-        color attenuation;
-        ray scattered;
-        color emit = rec.hit_mat->emitted(rec.uv);
-
-        if(rec.hit_mat->scatter(r, rec, attenuation, scattered))
-            return emit + attenuation * ray_color(scattered, world, depth - 1);
-        return emit;
+        vec2<double> x(nx(e), ny(e));
+        data.push_back(A * x + muA);
     }
+    for(int i = 0; i < 20; ++i)
+    {
+        vec2<double> y(nx(e), ny(e));
+        data.push_back(B * y + muB);
+    }
+    for(int i = 0; i < 20; ++i)
+    {
+        vec2<double> z(nx(e), ny(e));
+        data.push_back(C * z + muC);
+    }
+
+
+    g.offline_trainModel(data);
+    g.show();
+
+    for(int i = 0; i < 100000; ++i)
+    {
+        double x = random_double();
+        if(x < 0.2)
+            g.online_trainModel(A * vec2<double>(nx(e), ny(e)) + muA);
+        else if(x < 0.6)
+            g.online_trainModel(B * vec2<double>(nx(e), ny(e)) + muB);
+        else
+            g.online_trainModel(C * vec2<double>(nx(e), ny(e)) + muC);
+    }
+
+    g.show();
     
-    return background;
+    std::cout << muA << std::endl << sigmaA << std::endl
+             << muB << std::endl << sigmaB << std::endl
+             << muC << std::endl << sigmaC << std::endl;
+}
+
+void WGMM_test()
+{
+    WGMM g(3);
+
+    std::default_random_engine e;
+	// std::normal_distribution<double> nx(0, 1);
+    // std::normal_distribution<double> ny(0, 1);
+
+    std::uniform_real_distribution<double> nx(-1, 1);
+    std::uniform_real_distribution<double> ny(-1, 1);
+
+    mat2<double> A(1.1, 2, 0.3, 1.4);
+    mat2<double> B(1.45, -0.3, -1.4, 1.7);
+    mat2<double> C(2.1, 0.4, 1.1, -0.5);
+
+    vec2<double> muA(2, 5), muB(-5, -3), muC(10, 10);
+    mat2<double> sigmaA = A * A.transpose();
+    mat2<double> sigmaB = B * B.transpose();
+    mat2<double> sigmaC = C * C.transpose();
+
+    Gaussian a(muA, sigmaA);
+    Gaussian b(muB, sigmaB);
+    Gaussian c(muC, sigmaC);
+
+    std::vector<vec2<double> > data;
+    std::vector<double> w;
+    for(int i = 0; i < 10; ++i)
+    {
+        vec2<double> x(nx(e), ny(e));
+        vec2<double> xx = A * x + muA;
+        data.push_back(xx);
+        w.push_back(5 * a.pdf(xx));
+    }
+    for(int i = 0; i < 20; ++i)
+    {
+        vec2<double> y(nx(e), ny(e));
+        vec2<double> yy = B * y + muB;
+        data.push_back(yy);
+        w.push_back(5 * b.pdf(yy));
+    }
+    for(int i = 0; i < 20; ++i)
+    {
+        vec2<double> z(nx(e), ny(e));
+        vec2<double> zz = C * z + muC;
+        data.push_back(zz);
+        w.push_back(5 * c.pdf(zz));
+    }
+
+    g.offline_trainModel(data, w);
+    g.show();
+
+    for(int i = 0; i < 100000; ++i)
+    {
+        double x = random_double();
+        if(x < 0.2)
+        {
+            vec2<double> xx = A * vec2<double>(nx(e), ny(e)) + muA;
+            g.online_trainModel(xx, 5 * a.pdf(xx));
+        }
+        else if(x < 0.6)
+        {
+            vec2<double> xx = B * vec2<double>(nx(e), ny(e)) + muB;
+            g.online_trainModel(xx, 5 * b.pdf(xx));
+        }
+        else
+        {
+            vec2<double> xx = C * vec2<double>(nx(e), ny(e)) + muC;
+            g.online_trainModel(xx, 5 * c.pdf(xx));
+        }
+    }
+    g.show();
+    
+    std::cout << muA << std::endl << sigmaA << std::endl
+             << muB << std::endl << sigmaB << std::endl
+             << muC << std::endl << sigmaC << std::endl;
+}
+
+void kdtree_test()
+{
+    point p(-1, -5, 0.0);
+
+    std::vector<point> data {
+        point(6.27, 5.50, 0.0),
+        point(1.24, -2.86, 0.0),
+        point(-6.88, -5.4, 0.0),
+        point(-4.6, -10.55, 0.0),
+        point(-2.96, -0.5, 0.0),
+        point(-4.96, 12.61, 0.0),
+        point(1.75, 12.26, 0.0),
+        point(17.05, -12.79, 0.0),
+        point(7.75, -22.68, 0.0),
+        point(15.31, -13.16, 0.0),
+        point(10.8, -5.03, 0.0),
+        point(7.83, 15.7, 0.0),
+        point(14.63, -0.35, 0.0)
+    };
+
+    // kdTree* tree = new kdTree(data);
+    kdTree* tree = new kdTree(data[0], AXIS::AXIS_X);
+    for(int i = 1; i < data.size(); ++i)
+        tree->insert(data[i]);
+
+    auto out = tree->knn(3, p);
+
+    for(int i = 0; i < out.size(); ++i)
+        std::cout << out[i] << std::endl;
+
+    delete tree;
+}
+
+void kdtree_test2()
+{
+    std::vector<point> p;
+
+    for(int i = 0; i < 1000000; ++i)
+        p.push_back(point(random_double(0, 1), random_double(0, 1), random_double(0, 1)) * 10);
+
+    //kdTree tree(p);
+    kdTree tree(p[0], AXIS::AXIS_X);
+    for(int i = 1; i < p.size(); ++i)
+        tree.insert(p[i]);
+
+    auto out = tree.knn(5, point(7, 2, 1));
+
+    for(int i = 0; i < out.size(); ++i)
+        std::cout << out[i] << " ";
+    std::cout << std::endl;
 }
 
 void rt1()
@@ -145,7 +310,8 @@ void rt1()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                result = result + ray_color(r, bvh, max_depth);
+                color rc;
+                result = result + rc;
             }
             result = result / samples_per_pixel;
 
@@ -201,7 +367,8 @@ void rt2()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                color rc = ray_color(r, bvh, max_depth);
+                color rc;
+                // color rc = ray_color(r, bvh, max_depth);
                 result = result + rc;
             }
             
@@ -255,12 +422,12 @@ void rt3()
 
     auto boundary = make_shared<sphere>(point(360, 150, 145), 70, make_shared<dielectric>(1.5));
     world.add(boundary);
-    auto iso = make_shared<isotropic>(color(0.2, 0.4, 0.9));
-    world.add(make_shared<constant_medium>(boundary, 0.2, iso));
+    // auto iso = make_shared<isotropic>(color(0.2, 0.4, 0.9));
+    // world.add(make_shared<constant_medium>(boundary, 0.2, iso));
     
     boundary = make_shared<sphere>(point(0, 0, 0), 5000, make_shared<dielectric>(1.5));
-    iso = make_shared<isotropic>(color(1, 1, 1));
-    world.add(make_shared<constant_medium>(boundary, .0001, iso));      // There is a problem!!!
+    // iso = make_shared<isotropic>(color(1, 1, 1));
+    // world.add(make_shared<constant_medium>(boundary, .0001, iso));      // There is a problem!!!
 
     auto emat = make_shared<diffuse>(make_shared<imageTex>("../images/test2.jpg"));
     world.add(make_shared<sphere>(point(400, 200, 400), 100, emat));
@@ -292,7 +459,8 @@ void rt3()
                 double v = (j + random_double()) / width;
 
                 ray r = mycamera.get_ray(v, u);
-                color rc = ray_color(r, bvh, max_depth);
+                color rc;
+                // color rc = ray_color(r, bvh, max_depth);
                 result = result + rc;
             }
             
@@ -302,32 +470,16 @@ void rt3()
     fb.output("../images/test.ppm");
 }
 
-double pdf(const point& p)
-{
-    return 1.0 / (4 * pi);
-}
-
-// importance sampling
-
 int main()
 {
     clock_t start = clock();
     //math_test();
     //framebuffer_test();
     //geometry_test();
-    //rt1();
-    //rt2();
-    rt3();
-
-    // const int N = 10000000;
-    // double sum = 0;
-    // for(int i = 0; i < N; ++i)
-    // {
-    //     point p = random_sphere_surface();
-    //     sum += p.z * p.z / pdf(p);
-    // }
-    // cout << sum / (double)N << endl;
-    // cout << 4.0 / 3.0 * pi << endl;
+    // GMM_test();
+    // WGMM_test();
+    // kdtree_test();
+    kdtree_test2();
 
     clock_t end = clock();
     cout << (double)(end - start) / CLOCKS_PER_SEC << endl;

@@ -2,7 +2,7 @@
 
 double cosine_pdf::value(const direction& dir) const
 {
-    double cosine = dot(normal, dir);
+    double cosine = dot(normal, dir.normalize());
     return (cosine <= 0) ? 0 : cosine / PI;
 }
     
@@ -38,4 +38,14 @@ direction mixture_pdf::generate() const
 {
     int k = random_int(0, pdf_list.size() - 1);
     return pdf_list[k]->generate();
+}
+
+double gmm_pdf::value(const direction& dir) const
+{
+    return 0.0;
+}
+
+direction gmm_pdf::generate() const
+{
+    return direction();
 }

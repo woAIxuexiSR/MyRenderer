@@ -35,6 +35,7 @@ public:
     vec2<T> col(int c) const;
     T determinant() const;
     mat2<T> inverse() const;
+    mat2<T> transpose() const;
     mat2<T> operator-() const;
     T* operator[](int row);
 
@@ -73,6 +74,7 @@ public:
     vec3<T> col(int c) const;
     T determinant() const;
     mat3<T> inverse() const;
+    mat3<T> transpose() const;
     mat3<T> operator-() const;
     T* operator[](int row);
 
@@ -114,6 +116,7 @@ public:
     vec4<T> col(int c) const;
     T determinant() const;
     mat4<T> inverse() const;
+    mat4<T> transpose() const;
     mat4<T> operator-() const;
     T* operator[](int row);
 
